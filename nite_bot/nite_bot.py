@@ -15,7 +15,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemo
 spec_dict_final = {}
 MedStaffFact_id = {}
 MedStaffFact_id = []
-#data_time_final = {}
+# data_time_final = {}
 
 
 version = '5.38 pre-release'
@@ -51,8 +51,6 @@ class ClientRequests(StatesGroup):
     checking = State()
 
 
-
-
 # authorization
 def authorization():
     login = ''
@@ -64,7 +62,6 @@ def authorization():
     session = data_session['sess_id']
 
     return session
-
 
 
 def search_date(MedStaffFact_id):
@@ -80,7 +77,7 @@ def search_date(MedStaffFact_id):
     result = now + datetime.timedelta(days=5)
     TimeTableGraf_end = result.date()
     search_date = (f' https://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafFreeDate?MedStaffFact_id={MedStaffFact_id}'
-                  f'&TimeTableGraf_beg={today}&TimeTableGraf_end={TimeTableGraf_end}&sess_id={session}')
+                   f'&TimeTableGraf_beg={today}&TimeTableGraf_end={TimeTableGraf_end}&sess_id={session}')
 
     result_date = requests.get(search_date)
     data_date = result_date.json()
@@ -92,10 +89,6 @@ def search_date(MedStaffFact_id):
     return data_date
 
 
-
-
-
-
 def search_time(MedStaffFact_id, TimeTableGraf_begTime):
     print(f' получено значение в search_time1: {MedStaffFact_id}')
     print(f' получено значение в search_time2: {TimeTableGraf_begTime}')
@@ -104,9 +97,8 @@ def search_time(MedStaffFact_id, TimeTableGraf_begTime):
     authorization()
     session = authorization()
 
-
     search_time = f'http://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafFreeTime?MedStaffFact_id={MedStaffFact_id}' \
-                      f'&TimeTableGraf_begTime={TimeTableGraf_begTime}&sess_id={session}'
+                  f'&TimeTableGraf_begTime={TimeTableGraf_begTime}&sess_id={session}'
 
     result_MedStaffFact_id = requests.get(search_time)
     data_MedStaffFact_id = result_MedStaffFact_id.json()
@@ -114,12 +106,10 @@ def search_time(MedStaffFact_id, TimeTableGraf_begTime):
 
     data_time_dict = {}
 
-
     for k in data_MedStaffFact_id['data']:
-        #print(k)
+        # print(k)
         TimeTableGraf_begTime = k['TimeTableGraf_begTime']
         data_time_dict[TimeTableGraf_begTime] = k['TimeTableGraf_id']
-
 
     print(f' тут финальный словарь из search_time: {data_time_dict}')
     return data_time_dict
@@ -131,7 +121,7 @@ def search_polis(polis):
     authorization()
     session = authorization()
 
-    search_polis  = f'https://ecp.mznn.ru/api/Polis?Polis_Num={polis}&sess_id={session}'
+    search_polis = f'https://ecp.mznn.ru/api/Polis?Polis_Num={polis}&sess_id={session}'
     result_polis = requests.get(search_polis)
     polis_data = result_polis.json()
     print(f' дата для search_time: {polis_data}')
@@ -144,12 +134,11 @@ def search_person(person_id):
     authorization()
     session = authorization()
 
-    search_person  = f'https://ecp.mznn.ru/api/Person?Person_id={person_id}&sess_id={session}'
+    search_person = f'https://ecp.mznn.ru/api/Person?Person_id={person_id}&sess_id={session}'
     result_person = requests.get(search_person)
     person_data = result_person.json()
     print(f' дата в person_id: {person_data}')
     return person_data
-
 
 
 def search_entry(person_id, TimeTableGraf_id):
@@ -163,16 +152,16 @@ def search_entry(person_id, TimeTableGraf_id):
     result_entry = requests.post(search_entry)
     entry_date = result_entry.json()
 
-    #print(entry_date)
+    # print(entry_date)
 
     ##статус бирки
     status_entry = f'https://ecp.mznn.ru/api/TimeTableListbyPatient?Person_id={person_id}&sess_id={session}'
     result_status = requests.get(status_entry)
     status_date = result_status.json()
 
-    #print(status_date)
+    # print(status_date)
 
-    return  entry_date, status_date
+    return entry_date, status_date
 
 
 def entry_status(person_id):
@@ -184,7 +173,7 @@ def entry_status(person_id):
     status_entry = f'https://ecp.mznn.ru/api/TimeTableListbyPatient?Person_id={person_id}&sess_id={session}'
     result_status = requests.get(status_entry)
     status_date = result_status.json()
-    #print(status_date)
+    # print(status_date)
     return status_date
 
 
@@ -199,7 +188,7 @@ def time_delete(TimeTable_id, TimeTableSource):
     result_detele = requests.delete(delete_time)
     status_delete = result_detele.json()
     print(f' status_delete::: {status_delete}')
-    if status_delete['error_code'] == 6:# or status_delete['error_code'] != 0:
+    if status_delete['error_code'] == 6:  # or status_delete['error_code'] != 0:
         print('Бирка не найдена в системе.')
         error = 6
         return error
@@ -236,8 +225,6 @@ def search_doctor(d_final):
     return id_fast
 
 
-
-
 # некоторые переменные
 ####
 
@@ -248,7 +235,6 @@ lpu_id = 'Lpu_id=2762'
 
 @dp.message_handler(commands=['start'])
 async def start_command(message: types.Message):
-
     await message.reply(
         f' Добро пожаловать,\n'
         f' я бот помошник по ГБУЗ НО ГКБ №12\n'
@@ -259,13 +245,14 @@ async def start_command(message: types.Message):
         f' версия бота: {version}\n', reply_markup=kb_client)
 
 
-
 @dp.message_handler(text='вернуться в главное меню', state=ClientRequests.main_menu)
 async def return_command(message: types.Message, state: FSMContext):
     await message.reply('выберите раздел', reply_markup=kb_client)
 
+
 ##кнопка возврата
 menu = KeyboardButton('вернуться в главное меню')
+
 
 @dp.message_handler(commands=['help'], state=None)
 async def help_command(message: types.Message):
@@ -278,7 +265,7 @@ async def info_command(message: types.Message):
         f' CТАЦИОНАР ГКБ12\n'
         f' Нижний Новгородул, ул. Павла Мочалова,8\n'
         f' Секретарь: 273-00-62\n'
-        f'\n'       
+        f'\n'
         f' ПОЛИКЛИНИКА №1\n'
         f' Нижний Новгород, ул.Васенко,11\n'
         f' регистратура: 280-85-95\n'
@@ -355,9 +342,8 @@ async def spec_command(message: types.Message):
 
         await message.reply('Выберите специальность', reply_markup=spec_client)
         await ClientRequests.spec.set()  # Устанавливаем состояние
+
     await message.reply('Выберите поликлинику', reply_markup=pol_client)
-
-
 
 
 @dp.message_handler(text='ПРОВЕРКА ЗАПИСИ', state=None)
@@ -394,7 +380,6 @@ async def checking(message: types.Message, state: FSMContext):
             await message.reply('Неверный ввод, такого полиса не существует')
         else:
 
-
             print(polis_data['data'][0]['Polis_id'])
             person_data = search_person(polis_data['data'][0]['Person_id'])
             print(person_data)
@@ -417,15 +402,11 @@ async def checking(message: types.Message, state: FSMContext):
                     time = key['TimeTable_begTime']
                     id = key['TimeTable_id']
                     await bot.send_message(message.chat.id, f' ВЫ ЗАПИСАНЫ к: {name}\n на: {time}\n')
-                    await bot.send_message(message.chat.id, f" ID бирки: `{id}`", parse_mode = "Markdown")
+                    await bot.send_message(message.chat.id, f" ID бирки: `{id}`", parse_mode="Markdown")
                     await ClientRequests.main_menu.set()  # Устанавливаем состояние
                     await bot.send_message(message.chat.id, 'выберите раздел', reply_markup=kb_client)
                     spec_dict_final = {}
                     await state.finish()  # Выключаем состояние
-
-
-
-
 
 
 @dp.message_handler(text='ОТМЕНА ЗАПИСИ', state=None)
@@ -462,7 +443,6 @@ async def checking(message: types.Message, state: FSMContext):
             await message.reply('Неверный ввод, такого полиса не существует')
         else:
 
-
             print(polis_data['data'][0]['Polis_id'])
             person_data = search_person(polis_data['data'][0]['Person_id'])
             print(person_data)
@@ -480,18 +460,16 @@ async def checking(message: types.Message, state: FSMContext):
                 await state.finish()  # Выключаем состояние
 
             else:
-                #person_id_delete = ['data']['Person_id']
+                # person_id_delete = ['data']['Person_id']
                 for key in entry_data['data']['TimeTable']:
                     name = key['Post_name']
                     time = key['TimeTable_begTime']
                     id = key['TimeTable_id']
                     await bot.send_message(message.chat.id, f' ВЫ ЗАПИСАНЫ к: {name}\n на: {time}\n')
-                    await bot.send_message(message.chat.id, f" ID бирки: `{id}`", parse_mode = "Markdown")
+                    await bot.send_message(message.chat.id, f" ID бирки: `{id}`", parse_mode="Markdown")
 
-
-
-
-                    await bot.send_message(message.chat.id, 'Если желаете отменить запись введите ID бирки:', reply_markup=menu_client)
+                    await bot.send_message(message.chat.id, 'Если желаете отменить запись введите ID бирки:',
+                                           reply_markup=menu_client)
                     await ClientRequests.entry_delete.set()  # Устанавливаем состояние
 
         @dp.message_handler(state=ClientRequests.entry_delete)
@@ -506,22 +484,22 @@ async def checking(message: types.Message, state: FSMContext):
                 await state.finish()  # Выключаем состояние
 
             elif message_delete.isdigit() == False:
-                await message.reply('Неверный ввод, вводите только цифры, без символов и пробелов', reply_markup=menu_client)
+                await message.reply('Неверный ввод, вводите только цифры, без символов и пробелов',
+                                    reply_markup=menu_client)
 
 
             elif message_delete.isdigit() == True:
 
                 for key in entry_data['data']['TimeTable']:
                     if key['TimeTable_id'] != message_delete:
-                        await message.reply('Данная бирка Вам не принадлежит, удаление невозможно', reply_markup=menu_client)
+                        await message.reply('Данная бирка Вам не принадлежит, удаление невозможно',
+                                            reply_markup=menu_client)
                     else:
 
                         TimeTableSource = 'Graf'
                         status_del = time_delete(message_delete, TimeTableSource)
                         print(status_del)
                         print(status_del)
-
-
 
                         if status_del['data'] == []:
                             print('done')
@@ -543,19 +521,11 @@ async def checking(message: types.Message, state: FSMContext):
                 await state.finish()  # Выключаем состояние
 
             else:
-                await bot.send_message(message.chat.id, 'Неверный ввод, повторите попытку',reply_markup=menu_client)
-
-
-
-
-
-
+                await bot.send_message(message.chat.id, 'Неверный ввод, повторите попытку', reply_markup=menu_client)
 
 
 @dp.message_handler(state=ClientRequests.spec)
 async def get_spec(message: types.Message, state: FSMContext):
-
-
     question_spec = message.text
     if question_spec == 'вернуться в главное меню':
         await ClientRequests.main_menu.set()  # Устанавливаем состояние
@@ -571,7 +541,6 @@ async def get_spec(message: types.Message, state: FSMContext):
 
         await state.update_data(spec=spec_final)
 
-
         data = await state.get_data()
         spec = data.get('spec')
         pol = data.get('pol')
@@ -579,9 +548,6 @@ async def get_spec(message: types.Message, state: FSMContext):
         print(f' spec = {spec}')
         print(f' pol = {pol}')
         await ClientRequests.next()
-
-
-
 
         base_ecp_spec = base_ecp.medspecoms_id[spec]
         print(f' базовая ид специальности: {base_ecp_spec}')
@@ -598,28 +564,23 @@ async def get_spec(message: types.Message, state: FSMContext):
         print(data_lpu_person)
         if data_lpu_person['data'] == []:
             await bot.send_message(message.from_id,
-                               'К данному специалисту запись на 5 ближайших дней отсутствует', reply_markup = kb_client)
+                                   'К данному специалисту запись на 5 ближайших дней отсутствует',
+                                   reply_markup=kb_client)
 
         else:
             doc = ReplyKeyboardMarkup(resize_keyboard=True)
             for i in data_lpu_person['data']:
-
                 name = i['PersonSurName_SurName']
                 spec_dict_final[name] = i['MedStaffFact_id']
 
             print(f' это dict: {spec_dict_final}')
             doc.add(menu)
 
-
-
             for key in spec_dict_final:
                 doc.add(key)
 
-
             await message.reply('К кому хотим записаться ?', reply_markup=doc)
             await ClientRequests.doctor.set()  # Устанавливаем состояние
-
-
 
         @dp.message_handler()
         async def get_doctor_name(message: types.Message, state: FSMContext):
@@ -637,7 +598,7 @@ async def get_spec(message: types.Message, state: FSMContext):
             else:
                 global MedStaffFact_id
                 MedStaffFact_id = (spec_dict_final[mess])
-                await state.update_data(MedStaffFact_id=MedStaffFact_id) ################
+                await state.update_data(MedStaffFact_id=MedStaffFact_id)  ################
 
                 print(f' @@ MedStaffFact_id: {MedStaffFact_id}')
 
@@ -650,10 +611,8 @@ async def get_spec(message: types.Message, state: FSMContext):
                 data_button = ReplyKeyboardMarkup(resize_keyboard=True)
                 data_button.add(menu)
 
-
-
                 TimeTableGraf_begTime = []
-            ### цикл бигелова
+                ### цикл бигелова
                 for key in data_date_list['data']:
                     print(key['TimeTableGraf_begTime'])
                     data_button.add(key['TimeTableGraf_begTime'])
@@ -663,7 +622,8 @@ async def get_spec(message: types.Message, state: FSMContext):
                 spec_dict_final = {}
                 print(f' это список TimeTableGraf_begTime: {TimeTableGraf_begTime}')
                 if TimeTableGraf_begTime == []:
-                    await bot.send_message(message.from_id, 'На ближажшие 5 дней нет свободных дат к данному специалисту')
+                    await bot.send_message(message.from_id,
+                                           'На ближажшие 5 дней нет свободных дат к данному специалисту')
                     await ClientRequests.main_menu.set()  # Устанавливаем состояние
                     await message.reply('выберите раздел', reply_markup=kb_client)
                     spec_dict_final = {}
@@ -671,10 +631,9 @@ async def get_spec(message: types.Message, state: FSMContext):
 
                 else:
                     await bot.send_message(message.from_id,
-                                       'На ближажшие 5 дней есть следующие свободные даты:\n'
-                                       'Выберите желаемую дату приёма', reply_markup=data_button)
+                                           'На ближажшие 5 дней есть следующие свободные даты:\n'
+                                           'Выберите желаемую дату приёма', reply_markup=data_button)
                     await ClientRequests.date.set()  # Устанавливаем состояние
-
 
                 @dp.message_handler(state=ClientRequests.date)
                 async def time(message: types.Message, state: FSMContext):
@@ -684,7 +643,6 @@ async def get_spec(message: types.Message, state: FSMContext):
                     print(f' time_mess: {time_mess}')
 
                     """передать TimeTableGraf_begTime и MedStaffFact_id (он выше по коду в переменной)"""
-
 
                     print(f' TimeTableGraf_begTime: {time_mess}')
                     print(f' MedStaffFact_id: {MedStaffFact_id}')
@@ -705,23 +663,17 @@ async def get_spec(message: types.Message, state: FSMContext):
                         data_time = ReplyKeyboardMarkup(resize_keyboard=True)
                         data_time.add(menu)
 
-
                         for key_time in data_time_final:
                             print(f' время: {key_time}')
                             data_time.add(key_time)
 
-
-
-                        await bot.send_message(message.from_id, 'Выберите желаемое время приёма:', reply_markup=data_time)
-
-
-
+                        await bot.send_message(message.from_id, 'Выберите желаемое время приёма:',
+                                               reply_markup=data_time)
 
                     @dp.message_handler(state=ClientRequests.time)
                     async def get_person_time(message: types.Message, state: FSMContext):
                         message_time = message.text
                         print(f' message_time: {message_time}')
-
 
                         if message_time == 'вернуться в главное меню':
                             await ClientRequests.main_menu.set()  # Устанавливаем состояние
@@ -733,8 +685,6 @@ async def get_spec(message: types.Message, state: FSMContext):
                             data = await state.get_data()
                             MedStaffFact_id = data.get('MedStaffFact_id')
 
-
-
                             data_time_final = search_time(MedStaffFact_id, time_mess)
                             print(f' data_time_final в else: {data_time_final}')
                             print(f' message_time в else: {message_time}')
@@ -744,9 +694,9 @@ async def get_spec(message: types.Message, state: FSMContext):
                             await state.update_data(time=message_time)
                             await state.update_data(TimeTableGraf_id=TimeTableGraf_id)
 
-                            await bot.send_message(message.from_id, 'Введите свой полис ОМС: ', reply_markup=menu_client)
+                            await bot.send_message(message.from_id, 'Введите свой полис ОМС: ',
+                                                   reply_markup=menu_client)
                             await ClientRequests.person.set()  # Устанавливаем состояние
-
 
                         @dp.message_handler(state=ClientRequests.person)
                         async def get_person_polis(message: types.Message, state: FSMContext):
@@ -761,10 +711,12 @@ async def get_spec(message: types.Message, state: FSMContext):
                                 await state.finish()  # Выключаем состояние
 
                             elif len(message_polis) != 16:
-                                await message.reply('Неверный ввод, введите 16 цифр номера полиса', reply_markup=menu_client)
+                                await message.reply('Неверный ввод, введите 16 цифр номера полиса',
+                                                    reply_markup=menu_client)
 
                             elif message_polis.isdigit() == False:
-                                await message.reply('Неверный ввод, вводите только цифры, без символов и пробелов', reply_markup=menu_client)
+                                await message.reply('Неверный ввод, вводите только цифры, без символов и пробелов',
+                                                    reply_markup=menu_client)
 
                             else:
 
@@ -774,23 +726,19 @@ async def get_spec(message: types.Message, state: FSMContext):
                                 person = search_person(polis_data['data'][0]['Person_id'])
                                 person_id = person['data'][0]['Person_id']
 
-
-
                                 print(f' получена из функции: {person_id}')
                                 await state.update_data(person_id=person_id)
-
 
                                 PersonSurName_SurName = person['data'][0]['PersonSurName_SurName']
                                 PersonFirName_FirName = person['data'][0]['PersonFirName_FirName']
                                 PersonSecName_SecName = person['data'][0]['PersonSecName_SecName']
                                 PersonBirthDay_BirthDay = person['data'][0]['PersonBirthDay_BirthDay']
 
-
                                 await message.reply(
-                                                 f' Фамилия: {PersonSurName_SurName}\n'
-                                                 f' Имя: {PersonFirName_FirName}\n'
-                                                 f' Отчество: {PersonSecName_SecName}\n'
-                                                 f' Дата рождения: {PersonBirthDay_BirthDay}\n')
+                                    f' Фамилия: {PersonSurName_SurName}\n'
+                                    f' Имя: {PersonFirName_FirName}\n'
+                                    f' Отчество: {PersonSecName_SecName}\n'
+                                    f' Дата рождения: {PersonBirthDay_BirthDay}\n')
 
                                 await bot.send_message(message.from_id, 'Это Вы ?', reply_markup=ident_client)
 
@@ -808,8 +756,6 @@ async def get_spec(message: types.Message, state: FSMContext):
                                         spec_dict_final = {}
                                         await state.finish()  # Выключаем состояние
 
-
-
                                     if message_entry == 'ДА':
                                         data = await state.get_data()
                                         time = data.get('time')
@@ -824,12 +770,13 @@ async def get_spec(message: types.Message, state: FSMContext):
                                         print(f' entry_data: {entry_data}')
 
                                         await bot.send_message(message.from_id,
-                                                f" ВЫ УСПЕШНО ЗАПИСАНЫ к: {entry_data[1]['data']['TimeTable'][0]['Post_name']}"
-                                                f" на: {entry_data[1]['data']['TimeTable'][0]['TimeTable_begTime']}", reply_markup=menu_client)
-
+                                                               f" ВЫ УСПЕШНО ЗАПИСАНЫ к: {entry_data[1]['data']['TimeTable'][0]['Post_name']}"
+                                                               f" на: {entry_data[1]['data']['TimeTable'][0]['TimeTable_begTime']}",
+                                                               reply_markup=menu_client)
 
                                         await ClientRequests.main_menu.set()  # Устанавливаем состояние
-                                        await bot.send_message(message.from_id,'выберите раздел', reply_markup=kb_client)
+                                        await bot.send_message(message.from_id, 'выберите раздел',
+                                                               reply_markup=kb_client)
                                         spec_dict_final = {}
                                         await state.finish()  # Выключаем состояние
 
@@ -847,10 +794,8 @@ async def get_spec(message: types.Message, state: FSMContext):
 
         await state.finish()  # Выключаем состояние
 
+
 changelog = 'реализована отмена'
-
-
 
 if __name__ == '__main__':
     executor.start_polling(dp, on_shutdown=shutdown)
-

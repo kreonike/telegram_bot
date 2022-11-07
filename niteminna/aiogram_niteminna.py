@@ -17,7 +17,7 @@ MedStaffFact_id = {}
 MedStaffFact_id = []
 data_time_final = {}
 
-version = '6.11 pre-release'
+version = '6.12 pre-release'
 creator = '@rapot'
 
 bot = Bot(bot_token)
@@ -51,6 +51,8 @@ class ClientRequests(StatesGroup):
     MedStaffFact_id = State()
     checking = State()
     time_time = State()
+    post_id = State()
+    message_time = State()
 
 
 #    LpuBuilding_id = State()
@@ -92,6 +94,7 @@ def search_date(MedStaffFact_id):
     result = now + datetime.timedelta(days=6)
     TimeTableGraf_end = result.date()
     # print(f' TimeTableGraf_end в search_date: {TimeTableGraf_end}')
+
     search_date = (f' https://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafFreeDate?MedStaffFact_id={MedStaffFact_id}'
                    f'&TimeTableGraf_beg={tomorrow}&TimeTableGraf_end={TimeTableGraf_end}&sess_id={session}')
 
@@ -119,6 +122,10 @@ def search_time(MedStaffFact_id, TimeTableGraf_begTime):
     ##авторизация
     authorization()
     session = authorization()
+
+    # TODO тип бирки
+    # TimeTableType_id = '1'
+    # TimeTableType_id = {TimeTableType_id} &
 
     search_time = f'http://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafFreeTime?MedStaffFact_id={MedStaffFact_id}' \
                   f'&TimeTableGraf_begTime={TimeTableGraf_begTime}&sess_id={session}'
@@ -573,6 +580,10 @@ async def checking(message: types.Message, state: FSMContext):
                 await bot.send_message(message.chat.id, 'Неверный ввод, повторите попытку', reply_markup=menu_client)
 
 
+def search_spec():
+    pass
+
+
 # spec_client.add(menu)
 @dp.message_handler(state=ClientRequests.spec)
 async def get_spec(message: types.Message, state: FSMContext):
@@ -609,6 +620,8 @@ async def get_spec(message: types.Message, state: FSMContext):
         base_ecp_spec = base_ecp.medspecoms_id[spec]
         print(f' базовая ид специальности: {base_ecp_spec}')
 
+        # search_spec(base_ecp_spec, pol)
+
         ##авторизация
         authorization()
         session = authorization()
@@ -618,22 +631,33 @@ async def get_spec(message: types.Message, state: FSMContext):
 
         result_lpu_person = requests.get(search_lpu_person)
         data_lpu_person = result_lpu_person.json()
-        print(data_lpu_person)
+        print(f' MedStaffFact_id data_lpu_person: {data_lpu_person}')
+
+        global post_id
+        for key in data_lpu_person['data']:
+            # print(key['Post_id'])
+            post_id = key['Post_id']
+
+        print(post_id)
+        # await state.update_data(post_id=post_id)
         if data_lpu_person['data'] == []:
             await bot.send_message(message.from_id,
                                    'К данному специалисту запись на 5 ближайших дней отсутствует',
                                    reply_markup=kb_client)
 
         else:
+            # post_id = []
             doc = ReplyKeyboardMarkup(resize_keyboard=True)
             for i in data_lpu_person['data']:
                 # print(i['PersonSurName_SurName'], i['MedStaffFact_id'])
                 name = i['PersonSurName_SurName']
                 spec_dict_final[name] = i['MedStaffFact_id']
-
+            print(f' ? post_id: {post_id}')
             print(f' это dict: {spec_dict_final}')
+            #await state.update_data(post_id=post_id)
             doc.add(menu)
 
+            #time_keys = []
             for key in spec_dict_final:
                 # print(key)
                 # k = str(key.upper())
@@ -643,14 +667,19 @@ async def get_spec(message: types.Message, state: FSMContext):
             await message.reply('К кому хотим записаться ?', reply_markup=doc)
             await ClientRequests.doctor.set()  # Устанавливаем состояние
 
+        print(f' !! {post_id}')
         @dp.message_handler()
         async def get_doctor_name(message: types.Message, state: FSMContext):
             await bot.send_message(message.from_id, 'Идёт поиск сводных дат для записи, ожидайте..')
             global spec_dict_final
+            # global post_id
+            print(post_id)
             # spec_dict_final = get_spec(spec_dict_final)
             print(f't2: {spec_dict_final}')
+
             mess = message.text
             print(f' message_handler() mess: {mess}')
+
             if mess == 'вернуться в главное меню':
                 await ClientRequests.main_menu.set()  # Устанавливаем состояние
                 await message.reply('выберите раздел', reply_markup=kb_client)
@@ -686,6 +715,10 @@ async def get_spec(message: types.Message, state: FSMContext):
                 ## без вот этой хуйни не работает, обнуляю словарь тут.
                 spec_dict_final = {}
                 print(f' это список TimeTableGraf_begTime: {TimeTableGraf_begTime}')
+                ###############
+
+                ###############
+
                 if TimeTableGraf_begTime == []:
                     await bot.send_message(message.from_id,
                                            'На ближажшие 5 дней нет свободных дат к данному специалисту')
@@ -719,7 +752,7 @@ async def get_spec(message: types.Message, state: FSMContext):
                         await ClientRequests.main_menu.set()  # Устанавливаем состояние
                         await message.reply('выберите раздел', reply_markup=kb_client)
                         spec_dict_final = {}
-                        data_time_final
+                        #data_time_final
                         await state.finish()  # Выключаем состояние
                         # await ClientRequests.next()
 
@@ -779,12 +812,14 @@ async def get_spec(message: types.Message, state: FSMContext):
                             print(f' message_time: {message_time}')
                             # await state.update_data(time=message_time)
                             await state.update_data(TimeTableGraf_id=TimeTableGraf_id)
+                            await state.update_data(message_time=message_time)
                             # TimeTableGraf_id
 
                             await bot.send_message(message.from_id, 'Введите свой полис ОМС: ',
                                                    reply_markup=menu_client)
                             await ClientRequests.person.set()  # Устанавливаем состояние
                             # await ClientRequests.next()
+
 
                         @dp.message_handler(state=ClientRequests.person)
                         async def get_person_polis(message: types.Message, state: FSMContext):
@@ -806,17 +841,43 @@ async def get_spec(message: types.Message, state: FSMContext):
                                 await message.reply('Неверный ввод, вводите только цифры, без символов и пробелов',
                                                     reply_markup=menu_client)
 
-                            else:
+                            # elif
 
-                                print(f' message_polic: {message_polis}')
-                                # await state.update_data(polic=message_polic)
+                            else:
                                 polis_data = search_polis(message_polis)
                                 print(f' polis_num из функции: {polis_data}')
                                 person = search_person(polis_data['data'][0]['Person_id'])
-                                # print(f' тут что ? {person_id}')
                                 person_id = person['data'][0]['Person_id']
-
                                 print(f' получена из функции: {person_id}')
+
+                                print('=========ПРОВЕРКА=========')
+                                print(f' post_id для check: {post_id}')
+                                print(f' Person_id: {person_id}')
+                                check_entry_data = entry_status(person_id)
+                                print(check_entry_data)
+                                data = await state.get_data()
+                                message_time = data.get('message_time')
+                                print(message_time)
+                                date_whithout_time = message_time.partition(' ')[0]
+
+                                for j in check_entry_data['data']['TimeTable']:
+
+                                    if j['Post_id'] == post_id and j['TimeTable_begTime'].partition(' ')[
+                                        0] == date_whithout_time:
+                                        print('НАЙДЕНО СОВПАДЕНИЕ')
+                                        print('запись к одному и тому же специалисту на один и тот же день запрещена')
+                                        await ClientRequests.main_menu.set()  # Устанавливаем состояние
+                                        await message.reply(
+                                            'запись к одному и тому же специалисту на один и тот же день запрещена',
+                                            reply_markup=kb_client)
+                                        spec_dict_final = {}
+                                        await state.finish()  # Выключаем состояние
+
+                                    # else:
+                                    #         print('совпадений не найдено')
+
+                                # print('=========ПРОВЕРКА=========')
+
                                 await state.update_data(person_id=person_id)
 
                                 PersonSurName_SurName = person['data'][0]['PersonSurName_SurName']

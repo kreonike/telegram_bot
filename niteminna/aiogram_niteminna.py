@@ -268,6 +268,24 @@ lpu_id = 'Lpu_id=2762'
 
 ####
 
+
+def search_double(post_id, check_entry_data, date_whithout_time):
+    # check_entry_data = {'error_code': 0, 'data': {'Person_id': '7831750', 'Person_SurName': 'Соляник', 'Person_FirName': 'Дмитрий', 'Person_SecName': 'Григорьевич', 'Person_Phone': '9308000705', 'TimeTable': [{'TimeTableSource': 'Graf', 'TimeTable_id': '520101029489523', 'TimeTable_factTime': None, 'TimeTable_begTime': '2022-11-08 10:45:00', 'MedService_id': None, 'MedService_Name': None, 'MedStaffFact_id': '520101000026280', 'Post_id': '92', 'Post_name': 'Врач-эндокринолог', 'LpuSectionProfile_id': '520101000000002', 'Usluga_Code': None, 'Usluga_Name': None, 'Lpu_id': '2762'}]}}
+
+    for j in check_entry_data['data']['TimeTable']:
+
+        if j['Post_id'] == post_id and j['TimeTable_begTime'].partition(' ')[
+            0] == date_whithout_time:
+            print('НАЙДЕНО СОВПАДЕНИЕ')
+            print('запись к одному и тому же специалисту на один и тот же день запрещена')
+            error = 6
+            return error
+        else:
+            print('совпадений не найдено')
+            error = 0
+            return error
+
+
 @dp.message_handler(commands=['start'])
 async def start_command(message: types.Message):
     await message.reply(
@@ -532,7 +550,7 @@ async def checking(message: types.Message, state: FSMContext):
                 await message.reply('Неверный ввод, вводите только цифры, без символов и пробелов',
                                     reply_markup=menu_client)
             # print(Post_name)
-
+            # TODO тут проверить
             elif message_delete.isdigit() == True:
                 data = await state.get_data()
                 entry_data = data.get('entry_data_delete')
@@ -843,7 +861,7 @@ async def get_spec(message: types.Message, state: FSMContext):
 
                             # elif
 
-                            else:
+                            elif message_polis.isdigit() == True:
                                 polis_data = search_polis(message_polis)
                                 print(f' polis_num из функции: {polis_data}')
                                 person = search_person(polis_data['data'][0]['Person_id'])
@@ -855,27 +873,31 @@ async def get_spec(message: types.Message, state: FSMContext):
                                 print(f' Person_id: {person_id}')
                                 check_entry_data = entry_status(person_id)
                                 print(check_entry_data)
+
                                 data = await state.get_data()
                                 message_time = data.get('message_time')
                                 print(message_time)
                                 date_whithout_time = message_time.partition(' ')[0]
 
+                                # status_double = search_double(post_id, check_entry_data, date_whithout_time)
+                                print(post_id)
+                                print(check_entry_data)
+                                print(date_whithout_time)
+                                # print(f' status_double: {status_double}')
+                                # await message.reply('запись к одному и тому же специалисту на один и тот же день запрещена', reply_markup=kb_client)
+                                global check_error
+                                check_error = 0
                                 for j in check_entry_data['data']['TimeTable']:
-
                                     if j['Post_id'] == post_id and j['TimeTable_begTime'].partition(' ')[
                                         0] == date_whithout_time:
                                         print('НАЙДЕНО СОВПАДЕНИЕ')
                                         print('запись к одному и тому же специалисту на один и тот же день запрещена')
-                                        await ClientRequests.main_menu.set()  # Устанавливаем состояние
-                                        await message.reply(
-                                            'запись к одному и тому же специалисту на один и тот же день запрещена',
-                                            reply_markup=kb_client)
-                                        spec_dict_final = {}
-                                        await state.finish()  # Выключаем состояние
+                                        check_error = 6
 
-                                    # else:
-                                    #         print('совпадений не найдено')
+                                    else:
+                                        print('совпадений не найдено')
 
+                                print(check_error)
                                 # print('=========ПРОВЕРКА=========')
 
                                 await state.update_data(person_id=person_id)
@@ -897,6 +919,7 @@ async def get_spec(message: types.Message, state: FSMContext):
 
                                 @dp.message_handler(state=ClientRequests.entry)
                                 async def get_person(message: types.Message, state: FSMContext):
+
                                     message_entry = message.text
                                     print(message_entry)
 
@@ -908,36 +931,47 @@ async def get_spec(message: types.Message, state: FSMContext):
                                         await state.finish()  # Выключаем состояние
                                         # await ClientRequests.next()
 
-                                    if message_entry == 'ДА':
-                                        data = await state.get_data()
-                                        time = data.get('time')
-                                        TimeTableGraf_id = data.get('TimeTableGraf_id')
-                                        person_id = data.get('person_id')
+                                    elif message_entry == 'ДА':
+                                        print(check_error)
+                                        if check_error == 6:
 
-                                        print(f' message_time: {time}')
-                                        print(f' TimeTableGraf_id: {TimeTableGraf_id}')
-                                        print(f' person_id: {person_id}')
+                                            await ClientRequests.main_menu.set()  # Устанавливаем состояние
+                                            await message.reply(
+                                                'запись к одному и тому же специалисту на один и тот же день запрещена')
+                                            await ClientRequests.main_menu.set()  # Устанавливаем состояние
+                                            spec_dict_final = {}
+                                            await state.finish()  # Выключаем состояние
 
-                                        entry_data = search_entry(person_id, TimeTableGraf_id)
-                                        print(f' entry_data: {entry_data}')
-                                        # print(entry_data[1]['data'][0]['EvnStatus_Name'])
-                                        # if entry_data[1]['data'][0]['EvnStatus_Name'] == 'Записано':
-                                        await bot.send_message(message.from_id,
-                                                               f" ВЫ УСПЕШНО ЗАПИСАНЫ к: {entry_data[1]['data']['TimeTable'][0]['Post_name']}"
-                                                               f" на: {entry_data[1]['data']['TimeTable'][0]['TimeTable_begTime']}",
-                                                               reply_markup=menu_client)
+                                        elif check_error == 0:
+                                            data = await state.get_data()
+                                            time = data.get('time')
+                                            TimeTableGraf_id = data.get('TimeTableGraf_id')
+                                            person_id = data.get('person_id')
 
-                                        await ClientRequests.main_menu.set()  # Устанавливаем состояние
-                                        await bot.send_message(message.from_id, 'выберите раздел',
-                                                               reply_markup=kb_client)
-                                        spec_dict_final = {}
-                                        await state.finish()  # Выключаем состояние
+                                            print(f' message_time: {time}')
+                                            print(f' TimeTableGraf_id: {TimeTableGraf_id}')
+                                            print(f' person_id: {person_id}')
 
-                                        #
-                                        # else:
-                                        #     await bot.send_message(message.from_id,
-                                        #                            f' возникла какая-то ошибка, сообщите о пробеме @rapot'
-                                        #                            f' или попытайтесь позже', reply_markup=menu_client)
+                                            entry_data = search_entry(person_id, TimeTableGraf_id)
+                                            print(f' entry_data: {entry_data}')
+                                            # print(entry_data[1]['data'][0]['EvnStatus_Name'])
+                                            # if entry_data[1]['data'][0]['EvnStatus_Name'] == 'Записано':
+                                            await bot.send_message(message.from_id,
+                                                                   f" ВЫ УСПЕШНО ЗАПИСАНЫ к: {entry_data[1]['data']['TimeTable'][0]['Post_name']}"
+                                                                   f" на: {entry_data[1]['data']['TimeTable'][0]['TimeTable_begTime']}",
+                                                                   reply_markup=menu_client)
+
+                                            await ClientRequests.main_menu.set()  # Устанавливаем состояние
+                                            await bot.send_message(message.from_id, 'выберите раздел',
+                                                                   reply_markup=kb_client)
+                                            spec_dict_final = {}
+                                            await state.finish()  # Выключаем состояние
+
+
+                                        else:
+                                            await bot.send_message(message.from_id,
+                                                                   f' возникла какая-то ошибка, сообщите о пробеме @rapot'
+                                                                   f' или попытайтесь позже', reply_markup=menu_client)
 
                                     elif message_entry == 'НЕТ':
 
@@ -952,6 +986,8 @@ async def get_spec(message: types.Message, state: FSMContext):
                                     else:
                                         await message.reply('Повторите ввод, ДА или НЕТ нажанием на кнопки или словами')
 
+                            else:
+                                await message.reply('Повторите ввод, ДА или НЕТ нажанием на кнопки или словами')
             # await message.reply(mess, reply_markup=date_button)
             # await ClientRequests.next()
 

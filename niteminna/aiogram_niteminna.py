@@ -503,10 +503,10 @@ async def checking(message: types.Message, state: FSMContext):
                     id = key['TimeTable_id']
                     await bot.send_message(message.chat.id, f' ВЫ ЗАПИСАНЫ к: {name}\n на: {time}\n')
                     await bot.send_message(message.chat.id, f" ID бирки: `{id}`", parse_mode="Markdown")
-
-                    await bot.send_message(message.chat.id, 'Если желаете отменить запись введите ID бирки:',
-                                           reply_markup=menu_client)
-                    await ClientRequests.entry_delete.set()  # Устанавливаем состояние
+                # TODO тут было дублирование
+                await bot.send_message(message.chat.id, 'Если желаете отменить запись введите ID бирки:',
+                                       reply_markup=menu_client)
+                await ClientRequests.entry_delete.set()  # Устанавливаем состояние
 
         @dp.message_handler(state=ClientRequests.entry_delete)
         async def get_delete(message: types.Message, state: FSMContext):

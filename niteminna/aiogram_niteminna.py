@@ -12,6 +12,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.utils import executor
 from keyboards.client_kb import kb_client, spec_client, pol_client, menu_client, ident_client
+from config import bot_token, login_ecp, password_ecp
 
 spec_dict_final = {}
 MedStaffFact_id = {}
@@ -19,10 +20,11 @@ MedStaffFact_id = []
 # data_time_final = {}
 
 
-version = '5.38 pre-release'
+version = '5.39 pre-release'
 creator = '@rapot'
-# bot = Bot("5672834956:AAEUoJWiOd0cm7jMHozU9UdjJNJfyx5AJmI")
-bot = Bot("5744265137:AAFAr2WYgrKe1tfvJR50qjwNpTuW31pcNtY")
+
+bot = Bot(bot_token)
+
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
@@ -61,8 +63,8 @@ class ClientRequests(StatesGroup):
 
 # authorization
 def authorization():
-    login = 'bl12_respond'
-    password = 'xM5nQo'
+    login = login_ecp
+    password = password_ecp
     link = 'https://ecp.mznn.ru/api/user/login' + '?Login=' + login + '&Password=' + password
 
     responce = requests.get(link)

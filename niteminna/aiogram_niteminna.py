@@ -1,5 +1,3 @@
-# import telebot
-# from deepface import DeepFace
 import datetime
 
 import base_ecp
@@ -17,10 +15,9 @@ from config import bot_token, login_ecp, password_ecp
 spec_dict_final = {}
 MedStaffFact_id = {}
 MedStaffFact_id = []
-# data_time_final = {}
+data_time_final = {}
 
-
-version = '5.39 pre-release'
+version = '6.11 pre-release'
 creator = '@rapot'
 
 bot = Bot(bot_token)
@@ -53,6 +50,7 @@ class ClientRequests(StatesGroup):
     entry_delete = State()
     MedStaffFact_id = State()
     checking = State()
+    time_time = State()
 
 
 #    LpuBuilding_id = State()
@@ -83,14 +81,19 @@ def search_date(MedStaffFact_id):
     data_date_list = []
 
     now = datetime.datetime.now()
+
+    tomorrow = now + datetime.timedelta(days=1)
+    print(f' завтра: {tomorrow}')
     today = now.strftime("%Y-%m-%d")
+    tomorrow = tomorrow.strftime("%Y-%m-%d")
+
     # for time in range(5):
     # print(f' time search_date: {time}')
-    result = now + datetime.timedelta(days=5)
+    result = now + datetime.timedelta(days=6)
     TimeTableGraf_end = result.date()
     # print(f' TimeTableGraf_end в search_date: {TimeTableGraf_end}')
     search_date = (f' https://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafFreeDate?MedStaffFact_id={MedStaffFact_id}'
-                   f'&TimeTableGraf_beg={today}&TimeTableGraf_end={TimeTableGraf_end}&sess_id={session}')
+                   f'&TimeTableGraf_beg={tomorrow}&TimeTableGraf_end={TimeTableGraf_end}&sess_id={session}')
 
     result_date = requests.get(search_date)
     data_date = result_date.json()
@@ -478,6 +481,8 @@ async def checking(message: types.Message, state: FSMContext):
             print(person_data)
             person_id = person_data['data'][0]['Person_id']
             entry_data = entry_status(person_id)
+            await state.update_data(entry_data_delete=entry_data)
+
             # print(entry_data)
 
             print(f' entry_data: {entry_data}')
@@ -522,7 +527,9 @@ async def checking(message: types.Message, state: FSMContext):
             # print(Post_name)
 
             elif message_delete.isdigit() == True:
-
+                data = await state.get_data()
+                entry_data = data.get('entry_data_delete')
+                print(f' entry_data в удалении: {entry_data}')
                 for key in entry_data['data']['TimeTable']:
                     if key['TimeTable_id'] != message_delete:
                         await message.reply('Данная бирка Вам не принадлежит, удаление невозможно',
@@ -531,8 +538,8 @@ async def checking(message: types.Message, state: FSMContext):
 
                         TimeTableSource = 'Graf'
                         status_del = time_delete(message_delete, TimeTableSource)
-                        print(status_del)
-                        print(status_del)
+                        print(f' status_del: ! {status_del}')
+                        # print(status_del)
 
                         #
                         # if status_del == 6:
@@ -695,11 +702,13 @@ async def get_spec(message: types.Message, state: FSMContext):
 
                 @dp.message_handler(state=ClientRequests.date)
                 async def time(message: types.Message, state: FSMContext):
+                    await bot.send_message(message.from_id, 'Идёт поиск, ожидайте')
                     spec_dict_final = {}
                     print('sdfffffffffffff')
                     # await bot.send_message(message.from_id, 'Выберите желаемую дату приёма', reply_markup=data_button)
                     time_mess = message.text
                     print(f' time_mess: {time_mess}')
+                    await state.update_data(time=time_mess)
 
                     """передать TimeTableGraf_begTime и MedStaffFact_id (он выше по коду в переменной)"""
 
@@ -710,11 +719,12 @@ async def get_spec(message: types.Message, state: FSMContext):
                         await ClientRequests.main_menu.set()  # Устанавливаем состояние
                         await message.reply('выберите раздел', reply_markup=kb_client)
                         spec_dict_final = {}
+                        data_time_final
                         await state.finish()  # Выключаем состояние
                         # await ClientRequests.next()
 
                     else:
-                        # data_time_final = {}
+                        data_time_final = {}
                         data_time_final = search_time(MedStaffFact_id, time_mess)
                         print(f' !!!!!!! data_time_final{data_time_final}')
 
@@ -732,7 +742,7 @@ async def get_spec(message: types.Message, state: FSMContext):
                         await bot.send_message(message.from_id, 'Выберите желаемое время приёма:',
                                                reply_markup=data_time)
 
-                        # await state.update_data(time=message_time)
+                        await state.update_data(time_time=time_mess)
                         await ClientRequests.time.set()  # Устанавливаем состояние
                         # await ClientRequests.next()
                         # await state.finish()  # Выключаем состояни
@@ -741,7 +751,8 @@ async def get_spec(message: types.Message, state: FSMContext):
                     async def get_person_time(message: types.Message, state: FSMContext):
                         message_time = message.text
                         print(f' message_time: {message_time}')
-                        # await state.update_data(time=message_time)
+                        await bot.send_message(message.from_id, 'Идёт поиск, ожидайте:')
+                        await state.update_data(time=message_time)
 
                         if message_time == 'вернуться в главное меню':
                             await ClientRequests.main_menu.set()  # Устанавливаем состояние
@@ -751,18 +762,22 @@ async def get_spec(message: types.Message, state: FSMContext):
                             # await ClientRequests.next()
 
                         else:
-                            # global data_time_final
+                            global data_time_final
                             data = await state.get_data()
+                            time_mess = data.get('time_time')
+                            # print(f' time_mess из State: {time_mess}')
                             MedStaffFact_id = data.get('MedStaffFact_id')
-                            # time_mess = data.get('time')
+
+                            print(f' message_time в else: {message_time}')
+                            data_time_final = {}
 
                             data_time_final = search_time(MedStaffFact_id, time_mess)
-                            print(f' data_time_final в else: {data_time_final}')
+                            print(f' !!!!!!!!data_time_final!!!!!!!!!!! в else: {data_time_final}')
                             print(f' message_time в else: {message_time}')
                             TimeTableGraf_id = data_time_final[message_time]
                             print(f' TimeTableGraf_id !!!!!!!!: {TimeTableGraf_id}')
                             print(f' message_time: {message_time}')
-                            await state.update_data(time=message_time)
+                            # await state.update_data(time=message_time)
                             await state.update_data(TimeTableGraf_id=TimeTableGraf_id)
                             # TimeTableGraf_id
 

@@ -556,20 +556,12 @@ async def checking(message: types.Message, state: FSMContext):
                 entry_data = data.get('entry_data_delete')
                 print(f' entry_data в удалении: {entry_data}')
                 for key in entry_data['data']['TimeTable']:
-                    if key['TimeTable_id'] != message_delete:
-                        await message.reply('Данная бирка Вам не принадлежит, удаление невозможно',
-                                            reply_markup=menu_client)
-                    else:
+                    if key['TimeTable_id'] == message_delete:
+                        print('TimeTable_id = message_delete')
 
                         TimeTableSource = 'Graf'
                         status_del = time_delete(message_delete, TimeTableSource)
                         print(f' status_del: ! {status_del}')
-                        # print(status_del)
-
-                        #
-                        # if status_del == 6:
-                        #     await message.reply('Бирка в системе не найдена',
-                        #                         reply_markup=menu_client)
 
                         if status_del['data'] == []:
                             print('done')
@@ -580,6 +572,9 @@ async def checking(message: types.Message, state: FSMContext):
                             spec_dict_final = {}
                             await state.finish()  # Выключаем состояние
 
+                        else:
+                            await message.reply('Данная бирка Вам не принадлежит, удаление невозможно',
+                                                reply_markup=menu_client)
                 # else:
                 #      await bot.send_message(message.chat.id, 'id бирки не найден, повторите попытку',reply_markup=menu_client)
 
@@ -957,8 +952,11 @@ async def get_spec(message: types.Message, state: FSMContext):
                                             # print(entry_data[1]['data'][0]['EvnStatus_Name'])
                                             # if entry_data[1]['data'][0]['EvnStatus_Name'] == 'Записано':
                                             await bot.send_message(message.from_id,
-                                                                   f" ВЫ УСПЕШНО ЗАПИСАНЫ к: {entry_data[1]['data']['TimeTable'][0]['Post_name']}"
-                                                                   f" на: {entry_data[1]['data']['TimeTable'][0]['TimeTable_begTime']}",
+                                                                   f" ВЫ УСПЕШНО ЗАПИСАНЫ:\n"
+                                                                   f" {entry_data[1]['data']['TimeTable'][0]['Post_name']}"
+                                                                   f" на:\n"
+                                                                   f" {entry_data[1]['data']['TimeTable'][0]['TimeTable_begTime']}\n"
+                                                                   f" приходите к назначенному времени сразу к врачу,\n в регистратуру идти не нужно",
                                                                    reply_markup=menu_client)
 
                                             await ClientRequests.main_menu.set()  # Устанавливаем состояние

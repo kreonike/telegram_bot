@@ -152,11 +152,12 @@ def search_time(MedStaffFact_id, data_date_dict):
         print(data_time_dict)
         for item in data_time_dict['data']:
             TimeTableGraf_id = item['TimeTableGraf_id']
-            search_type = f'http://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafById?TimeTableGraf_id={TimeTableGraf_id}&sess_id={session}'
+            search_type = f'http://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafById?' \
+                          f'TimeTableGraf_id={TimeTableGraf_id}&sess_id={session}'
             result_type = requests.get(search_type)
             data_type_dict = result_type.json()
             r = data_type_dict
-            #print(f' r = {r}')
+            # print(f' r = {r}')
             for j in r['data']:
                 if j['TimeTableType_id'] == '10' or j['TimeTableType_id'] == '1':
                     data_time_list.append(j)
@@ -167,6 +168,7 @@ def search_time(MedStaffFact_id, data_date_dict):
 
 def check_timetabletype(data_time_final):
     pass
+
 
 def search_polis(polis):
     print(f' получен полис в функцию search_polis: {polis}')
@@ -201,7 +203,8 @@ def search_entry(person_id, TimeTableGraf_id):
     session = authorization()
 
     ##сама запись post запрос
-    search_entry = f'https://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafWrite?Person_id={person_id}&TimeTableGraf_id={TimeTableGraf_id}&sess_id={session}'
+    search_entry = f'https://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafWrite?Person_id={person_id}&' \
+                   f'TimeTableGraf_id={TimeTableGraf_id}&sess_id={session}'
     result_entry = requests.post(search_entry)
     entry_date = result_entry.json()
 
@@ -237,7 +240,8 @@ def time_delete(TimeTable_id, TimeTableSource):
     print(f' TimeTableSource: {TimeTableSource}')
     FailCause = 1
     ##удаляем бирку
-    delete_time = f'https://ecp.mznn.ru/api/TimeTable?TimeTable_id={TimeTable_id}&TimeTableSource={TimeTableSource}&FailCause={FailCause}&sess_id={session}'
+    delete_time = f'https://ecp.mznn.ru/api/TimeTable?TimeTable_id={TimeTable_id}&TimeTableSource={TimeTableSource}' \
+                  f'&FailCause={FailCause}&sess_id={session}'
     result_detele = requests.delete(delete_time)
     status_delete = result_detele.json()
     print(f' status_delete::: {status_delete}')
@@ -288,7 +292,6 @@ lpu_id = 'Lpu_id=2762'
 
 
 def search_double(post_id, check_entry_data, date_whithout_time):
-    # check_entry_data = {'error_code': 0, 'data': {'Person_id': '7831750', 'Person_SurName': 'Соляник', 'Person_FirName': 'Дмитрий', 'Person_SecName': 'Григорьевич', 'Person_Phone': '9308000705', 'TimeTable': [{'TimeTableSource': 'Graf', 'TimeTable_id': '520101029489523', 'TimeTable_factTime': None, 'TimeTable_begTime': '2022-11-08 10:45:00', 'MedService_id': None, 'MedService_Name': None, 'MedStaffFact_id': '520101000026280', 'Post_id': '92', 'Post_name': 'Врач-эндокринолог', 'LpuSectionProfile_id': '520101000000002', 'Usluga_Code': None, 'Usluga_Name': None, 'Lpu_id': '2762'}]}}
 
     for j in check_entry_data['data']['TimeTable']:
 
@@ -565,9 +568,9 @@ async def checking(message: types.Message, state: FSMContext):
                 del_status = del_entry(message_delete, entry_data)
                 print(f' на выходе del_status: {del_status}')
                 if del_status == '0':
-                    await bot.send_message(message.chat.id, 'БИРКА УДАЛЕНА')
+                    await bot.send_message(message.chat.id, 'БИРКА УДАЛЕНА', reply_markup=kb_client)
                     await ClientRequests.main_menu.set()  # Устанавливаем состояние
-                    await bot.send_message(message.chat.id, 'выберите раздел', reply_markup=kb_client)
+                    # await bot.send_message(message.chat.id, 'выберите раздел', reply_markup=kb_client)
                     spec_dict_final = {}
                     await state.finish()  # Выключаем состояние
                 elif del_status == '6':
@@ -907,11 +910,10 @@ async def get_person(message: types.Message, state: FSMContext):
                                    f" {entry_data[1]['data']['TimeTable'][0]['Post_name']}"
                                    f" на: {entry_data[1]['data']['TimeTable'][0]['TimeTable_begTime']}\n"
                                    f" приходите к назначенному времени сразу к врачу,\n в регистратуру идти не нужно",
-                                   reply_markup=menu_client)
+                                   reply_markup=kb_client)
 
             await ClientRequests.main_menu.set()  # Устанавливаем состояние
-            await bot.send_message(message.from_id, 'выберите раздел',
-                                   reply_markup=kb_client)
+            #await bot.send_message(message.from_id, 'выберите раздел', reply_markup=kb_client)
             spec_dict_final = {}
             await state.finish()  # Выключаем состояние
 
@@ -936,6 +938,7 @@ async def get_person(message: types.Message, state: FSMContext):
         await message.reply('Повторите ввод, ДА или НЕТ нажанием на кнопки или словами')
 
     await state.finish()  # Выключаем состояние
+
 
 changelog = 'реализована отмена'
 

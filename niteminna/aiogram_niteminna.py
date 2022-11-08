@@ -409,7 +409,6 @@ async def cancel_command(message: types.Message):
 async def checking(message: types.Message, state: FSMContext):
     mess = message.text
     print(mess)
-
     if mess == 'вернуться в главное меню':
         print('+вернуться в главное меню+')
         await message.reply('выберите раздел', reply_markup=kb_client)
@@ -473,6 +472,7 @@ async def cancel_command(message: types.Message):
 
 @dp.message_handler(state=ClientRequests.cancel)
 async def checking(message: types.Message, state: FSMContext):
+    await bot.send_message(message.from_id, 'Идёт поиск, подождите ', reply_markup=menu_client)
     mess = message.text
     print(mess)
 
@@ -683,7 +683,6 @@ async def get_spec(message: types.Message, state: FSMContext):
         print(f' !! {post_id}')
         @dp.message_handler()
         async def get_doctor_name(message: types.Message, state: FSMContext):
-            await bot.send_message(message.from_id, 'Идёт поиск сводных дат для записи, ожидайте..')
             global spec_dict_final
             # global post_id
             print(post_id)
@@ -701,6 +700,7 @@ async def get_spec(message: types.Message, state: FSMContext):
                 # await ClientRequests.next()
 
             else:
+                await bot.send_message(message.from_id, 'Идёт поиск сводных дат для записи, ожидайте..')
                 global MedStaffFact_id
                 MedStaffFact_id = (spec_dict_final[mess])
                 await state.update_data(MedStaffFact_id=MedStaffFact_id)  ################
@@ -748,7 +748,6 @@ async def get_spec(message: types.Message, state: FSMContext):
 
                 @dp.message_handler(state=ClientRequests.date)
                 async def time(message: types.Message, state: FSMContext):
-                    await bot.send_message(message.from_id, 'Идёт поиск, ожидайте')
                     spec_dict_final = {}
                     print('sdfffffffffffff')
                     # await bot.send_message(message.from_id, 'Выберите желаемую дату приёма', reply_markup=data_button)
@@ -770,6 +769,7 @@ async def get_spec(message: types.Message, state: FSMContext):
                         # await ClientRequests.next()
 
                     else:
+                        await bot.send_message(message.from_id, 'Идёт поиск, ожидайте')
                         data_time_final = {}
                         data_time_final = search_time(MedStaffFact_id, time_mess)
                         print(f' !!!!!!! data_time_final{data_time_final}')
@@ -797,7 +797,6 @@ async def get_spec(message: types.Message, state: FSMContext):
                     async def get_person_time(message: types.Message, state: FSMContext):
                         message_time = message.text
                         print(f' message_time: {message_time}')
-                        await bot.send_message(message.from_id, 'Идёт поиск, ожидайте:')
                         await state.update_data(time=message_time)
 
                         if message_time == 'вернуться в главное меню':
@@ -808,6 +807,7 @@ async def get_spec(message: types.Message, state: FSMContext):
                             # await ClientRequests.next()
 
                         else:
+                            await bot.send_message(message.from_id, 'Идёт поиск, ожидайте:')
                             global data_time_final
                             data = await state.get_data()
                             time_mess = data.get('time_time')
@@ -857,6 +857,8 @@ async def get_spec(message: types.Message, state: FSMContext):
                             # elif
 
                             elif message_polis.isdigit() == True:
+                                await bot.send_message(message.from_id, 'Идёт поиск, подождите ',
+                                                       reply_markup=menu_client)
                                 polis_data = search_polis(message_polis)
                                 print(f' polis_num из функции: {polis_data}')
                                 person = search_person(polis_data['data'][0]['Person_id'])
@@ -952,10 +954,9 @@ async def get_spec(message: types.Message, state: FSMContext):
                                             # print(entry_data[1]['data'][0]['EvnStatus_Name'])
                                             # if entry_data[1]['data'][0]['EvnStatus_Name'] == 'Записано':
                                             await bot.send_message(message.from_id,
-                                                                   f" ВЫ УСПЕШНО ЗАПИСАНЫ:\n"
+                                                                   f" ВЫ УСПЕШНО ЗАПИСАНЫ к:"
                                                                    f" {entry_data[1]['data']['TimeTable'][0]['Post_name']}"
-                                                                   f" на:\n"
-                                                                   f" {entry_data[1]['data']['TimeTable'][0]['TimeTable_begTime']}\n"
+                                                                   f" на: {entry_data[1]['data']['TimeTable'][0]['TimeTable_begTime']}\n"
                                                                    f" приходите к назначенному времени сразу к врачу,\n в регистратуру идти не нужно",
                                                                    reply_markup=menu_client)
 
@@ -974,7 +975,8 @@ async def get_spec(message: types.Message, state: FSMContext):
                                     elif message_entry == 'НЕТ':
 
                                         await ClientRequests.main_menu.set()  # Устанавливаем состояние
-                                        await message.reply('выберите раздел', reply_markup=kb_client)
+                                        await bot.send_message(message.from_id, 'выберите раздел',
+                                                               reply_markup=kb_client)
                                         spec_dict_final = {}
                                         await state.finish()  # Выключаем состояние
                                         # await ClientRequests.next()

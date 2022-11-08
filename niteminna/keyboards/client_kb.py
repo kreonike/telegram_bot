@@ -31,7 +31,7 @@ text = KeyboardButton('М')
 yes = KeyboardButton('ДА')
 no = KeyboardButton('НЕТ')
 
-menu = KeyboardButton('вернуться в главное меню')
+menu = KeyboardButton('вернуться в меню')
 
 kb_client = ReplyKeyboardMarkup(resize_keyboard=True)
 spec_client = ReplyKeyboardMarkup(resize_keyboard=True)

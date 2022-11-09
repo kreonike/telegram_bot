@@ -292,7 +292,6 @@ lpu_id = 'Lpu_id=2762'
 
 
 def search_double(post_id, check_entry_data, date_whithout_time):
-
     for j in check_entry_data['data']['TimeTable']:
 
         if j['Post_id'] == post_id and j['TimeTable_begTime'].partition(' ')[
@@ -319,7 +318,8 @@ async def start_command(message: types.Message):
         f' версия бота: {version}\n', reply_markup=kb_client)
 
 
-@dp.message_handler(text='вернуться в меню', state=ClientRequests.main_menu)
+# @dp.message_handler(text='вернуться в меню', state=ClientRequests.main_menu)
+@dp.message_handler(text='вернуться в меню')
 async def return_command(message: types.Message, state: FSMContext):
     await message.reply('выберите раздел', reply_markup=kb_client)
 
@@ -397,7 +397,6 @@ async def spec_command(message: types.Message):
     async def spec_command(message: types.Message, state: FSMContext):
         print('поликлиника 2')
         await state.update_data(pol='520101000000591')
-
 
         await message.reply('Выберите специальность', reply_markup=spec_client)
         await ClientRequests.spec.set()  # Устанавливаем состояние
@@ -718,11 +717,11 @@ async def get_spec(message: types.Message, state: FSMContext):
         data_lpu_person = []
         print(data_lpu_person_old)
         for key in data_lpu_person_old:
-            print(key)
+            # print(key)
             if key['RecType_id'] == '1' and key['Post_id'] != '520101000000049' and key['Person_id'] != '5656886' and \
                     key['Person_id'] != '7611212' and key['Person_id'] != '10168043':
                 data_lpu_person.append(key)
-                print(key)
+                # print(key)
 
         print(f' HHHHH data_lpu_person: {data_lpu_person}')
 
@@ -764,7 +763,7 @@ async def get_spec(message: types.Message, state: FSMContext):
             await message.reply('К кому хотим записаться ?', reply_markup=doc)
             await ClientRequests.doctor.set()  # Устанавливаем состояние
 
-        #print(f' !! {post_id}')
+        # print(f' !! {post_id}')
         print(f't1: {spec_dict_final}')
 
 
@@ -777,7 +776,7 @@ async def get_doctor(message: types.Message, state: FSMContext):
     print(spec_dict_final)
     # await message.reply('К кому хотим записаться ?', reply_markup=doc)
     # global spec_dict_final
-    #print(post_id)
+    # print(post_id)
 
     print(f't2: {spec_dict_final}')
 
@@ -987,7 +986,7 @@ async def get_person(message: types.Message, state: FSMContext):
                                    reply_markup=kb_client)
 
             await ClientRequests.main_menu.set()  # Устанавливаем состояние
-            #await bot.send_message(message.from_id, 'выберите раздел', reply_markup=kb_client)
+            # await bot.send_message(message.from_id, 'выберите раздел', reply_markup=kb_client)
             spec_dict_final = {}
             await state.finish()  # Выключаем состояние
 
@@ -1100,7 +1099,7 @@ changelog = 'реализована отмена'
 
 
 if __name__ == '__main__':
-    executor.start_polling(dp, on_shutdown=shutdown)
+    executor.start_polling(dp, skip_updates=True, on_shutdown=shutdown)
 
 ########################
 

@@ -17,7 +17,7 @@ MedStaffFact_id = {}
 MedStaffFact_id = []
 data_time_final = {}
 
-version = '7.88 pre-release'
+version = '7.89 pre-release'
 creator = '@rapot'
 
 bot = Bot(bot_token)
@@ -159,7 +159,7 @@ def search_time(MedStaffFact_id, data_date_dict):
             r = data_type_dict
             # print(f' r = {r}')
             for j in r['data']:
-                if j['TimeTableType_id'] == '10' or j['TimeTableType_id'] == '1':
+                if j['TimeTableType_id'] == '10' or j['TimeTableType_id'] == '1' or j['TimeTableType_id'] == '11':
                     data_time_list.append(j)
                 else:
                     pass
@@ -615,6 +615,55 @@ def del_entry(message_delete, entry_data):
             return del_error
 
 
+def search_spec_doctor(base_ecp_spec, pol):
+    ##авторизация
+    authorization()
+    session = authorization()
+
+    if base_ecp_spec == 520101000000160:
+        print('меняем специальности')
+        stomat = ['520101000000160', '520101000000197', '520101000000165']
+
+        combile_data_lpu_person_old = []
+        data_lpu_person_list = []
+        for i in stomat:
+            # print(i)
+            search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={i}&' \
+                                f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
+            print(f'  (((((((((( search_lpu_person: {search_lpu_person}')
+
+            result_lpu_person = requests.get(search_lpu_person)
+            # data_lpu_person_old.append(result_lpu_person.json())
+            data_lpu_person_old_ = result_lpu_person.json()
+            # print(data_lpu_person_old_)
+            combile_data_lpu_person_old.append(data_lpu_person_old_)
+        print(f' ? combile_data_lpu_person_old: {combile_data_lpu_person_old}')
+        for member in combile_data_lpu_person_old:
+            for n in member['data']:
+                data_lpu_person_list.append(n)
+                # print(n)
+
+        # print(f' data_lpu_person_old в цикле: {data_lpu_person_old}')
+        # data_lpu_person_old = data_lpu_person_old['data']
+        # print(f' data_lpu_person_old на выходе из цикла: {data_lpu_person_old}')
+        # print(data_lpu_person_old['data'])
+        data_lpu_person_old = data_lpu_person_list
+        print(f' выход из функции data_lpu_person_old: {data_lpu_person_old}')
+        return data_lpu_person_old
+
+    else:
+
+        search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
+                            f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
+
+        result_lpu_person = requests.get(search_lpu_person)
+        data_lpu_person_old_ = result_lpu_person.json()
+        data_lpu_person_old = data_lpu_person_old_['data']
+
+        print(f' MedStaffFact_id data_lpu_person_old: {data_lpu_person_old}')
+        return data_lpu_person_old
+
+
 # spec_client.add(menu)
 @dp.message_handler(state=ClientRequests.spec)
 async def get_spec(message: types.Message, state: FSMContext):
@@ -648,28 +697,34 @@ async def get_spec(message: types.Message, state: FSMContext):
         base_ecp_spec = base_ecp.medspecoms_id[spec]
         print(f' базовая ид специальности: {base_ecp_spec}')
 
-        ##авторизация
-        authorization()
-        session = authorization()
-
-        search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
-                            f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
-
-        result_lpu_person = requests.get(search_lpu_person)
-        data_lpu_person_old = result_lpu_person.json()
-        print(f' MedStaffFact_id data_lpu_person_old: {data_lpu_person_old}')
+        data_lpu_person_old = search_spec_doctor(base_ecp_spec, pol)
+        #    ##авторизация
+        #    authorization()
+        #    session = authorization()
+        # ########################################################
+        #
+        #    search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
+        #                        f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
+        #
+        #
+        #
+        #    result_lpu_person = requests.get(search_lpu_person)
+        #    data_lpu_person_old = result_lpu_person.json()
+        #    print(f' MedStaffFact_id data_lpu_person_old: {data_lpu_person_old}')
 
         # проверка на имеющееся расписание у врача в принципе и исключаем конкретные специальности по Post_id
         #
+        print(f' 22 на выходе data_lpu_person_old: {data_lpu_person_old}')
         data_lpu_person = []
-
-        for key in data_lpu_person_old['data']:
-            if key['RecType_id'] == '1' and key['Post_id'] != '520101000000049' \
-                    and key['Person_id'] != '5656886' and key['Person_id'] != '7611212' \
-                    and key['Person_id'] != '10168043':
+        print(data_lpu_person_old)
+        for key in data_lpu_person_old:
+            print(key)
+            if key['RecType_id'] == '1' and key['Post_id'] != '520101000000049' and key['Person_id'] != '5656886' and \
+                    key['Person_id'] != '7611212' and key['Person_id'] != '10168043':
                 data_lpu_person.append(key)
+                print(key)
 
-        print(data_lpu_person)
+        print(f' HHHHH data_lpu_person: {data_lpu_person}')
 
         global post_id
 

@@ -86,7 +86,7 @@ def search_date(MedStaffFact_id):
     today = now.strftime("%Y-%m-%d")
     tomorrow = tomorrow.strftime("%Y-%m-%d")
 
-    result = now + datetime.timedelta(days=6)
+    result = now + datetime.timedelta(days=4)
     TimeTableGraf_end = result.date()
 
     search_date = (f' https://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafFreeDate?MedStaffFact_id={MedStaffFact_id}'
@@ -398,6 +398,7 @@ async def spec_command(message: types.Message):
         print('поликлиника 2')
         await state.update_data(pol='520101000000591')
 
+
         await message.reply('Выберите специальность', reply_markup=spec_client)
         await ClientRequests.spec.set()  # Устанавливаем состояние
 
@@ -617,6 +618,7 @@ def del_entry(message_delete, entry_data):
 # spec_client.add(menu)
 @dp.message_handler(state=ClientRequests.spec)
 async def get_spec(message: types.Message, state: FSMContext):
+    await bot.send_message(message.chat.id, 'Идёт поиск, ожидайте')
     global spec_dict_final
     print(f' на входе в get_spec {spec_dict_final}')
     question_spec = message.text
@@ -654,26 +656,43 @@ async def get_spec(message: types.Message, state: FSMContext):
                             f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
 
         result_lpu_person = requests.get(search_lpu_person)
-        data_lpu_person = result_lpu_person.json()
-        print(f' MedStaffFact_id data_lpu_person: {data_lpu_person}')
+        data_lpu_person_old = result_lpu_person.json()
+        print(f' MedStaffFact_id data_lpu_person_old: {data_lpu_person_old}')
+
+        # проверка на имеющееся расписание у врача в принципе и исключаем конкретные специальности по Post_id
+        #
+        data_lpu_person = []
+
+        for key in data_lpu_person_old['data']:
+            if key['RecType_id'] == '1' and key['Post_id'] != '520101000000049' \
+                    and key['Person_id'] != '5656886' and key['Person_id'] != '7611212' \
+                    and key['Person_id'] != '10168043':
+                data_lpu_person.append(key)
+
+        print(data_lpu_person)
 
         global post_id
 
-        for key in data_lpu_person['data']:
+        for key in data_lpu_person:
             post_id = key['Post_id']
 
-        print(post_id)
+        # print(post_id)
 
-        if data_lpu_person['data'] == []:
+        if data_lpu_person == []:
             await bot.send_message(message.from_id,
                                    'К данному специалисту запись на 5 ближайших дней отсутствует',
                                    reply_markup=kb_client)
+            await ClientRequests.main_menu.set()  # Устанавливаем состояние
+            # await message.reply('выберите раздел', reply_markup=kb_client)
+            await state.finish()  # Выключаем состояние
+
+
 
         else:
             doc = ReplyKeyboardMarkup(resize_keyboard=True)
             spec_dict_final = {}
             print(f't0: {spec_dict_final}')
-            for i in data_lpu_person['data']:
+            for i in data_lpu_person:
                 name = i['PersonSurName_SurName']
                 spec_dict_final[name] = i['MedStaffFact_id']
             print(f' ? post_id: {post_id}')
@@ -690,7 +709,7 @@ async def get_spec(message: types.Message, state: FSMContext):
             await message.reply('К кому хотим записаться ?', reply_markup=doc)
             await ClientRequests.doctor.set()  # Устанавливаем состояние
 
-        print(f' !! {post_id}')
+        #print(f' !! {post_id}')
         print(f't1: {spec_dict_final}')
 
 
@@ -703,7 +722,7 @@ async def get_doctor(message: types.Message, state: FSMContext):
     print(spec_dict_final)
     # await message.reply('К кому хотим записаться ?', reply_markup=doc)
     # global spec_dict_final
-    print(post_id)
+    #print(post_id)
 
     print(f't2: {spec_dict_final}')
 
@@ -736,7 +755,7 @@ async def get_doctor(message: types.Message, state: FSMContext):
 
         if data_time_final == []:
             await bot.send_message(message.from_id,
-                                   'На ближажшие 6 дней нет свободных дат к данному специалисту')
+                                   'На ближажшие 4 дня нет свободных дат к данному специалисту')
             await ClientRequests.main_menu.set()  # Устанавливаем состояние
             await message.reply('выберите раздел', reply_markup=kb_client)
             spec_dict_final = {}
@@ -751,7 +770,7 @@ async def get_doctor(message: types.Message, state: FSMContext):
                 data_button.add(i['TimeTableGraf_begTime'])
 
             await bot.send_message(message.from_id,
-                                   'На ближажшие 6 дней есть следующие свободные даты:\n'
+                                   'На ближажшие 4 дня есть следующие свободные даты:\n'
                                    'Выберите желаемую дату приёма', reply_markup=data_button)
             await ClientRequests.time.set()  # Устанавливаем состояние
 
@@ -771,7 +790,7 @@ async def get_person_time(message: types.Message, state: FSMContext):
         await state.finish()  # Выключаем состояние
 
     else:
-        await bot.send_message(message.from_id, 'Идёт поиск, ожидайте:')
+        await bot.send_message(message.from_id, 'Проверка возможности записи, ожидайте')
         global data_time_final
         data = await state.get_data()
         MedStaffFact_id = data.get('MedStaffFact_id')

@@ -618,7 +618,7 @@ def del_entry(message_delete, entry_data):
 # spec_client.add(menu)
 @dp.message_handler(state=ClientRequests.spec)
 async def get_spec(message: types.Message, state: FSMContext):
-    await bot.send_message(message.chat.id, 'Идёт поиск, ожидайте')
+    await bot.send_message(message.chat.id, 'Идёт поиск, доступных для записи врачей, ожидайте')
     global spec_dict_final
     print(f' на входе в get_spec {spec_dict_final}')
     question_spec = message.text
@@ -952,11 +952,13 @@ async def get_person(message: types.Message, state: FSMContext):
         # await ClientRequests.next()
 
 
+    elif message_entry != 'ДА' or message_entry != 'НЕТ' or message_entry != 'вернуться в меню':
+        await message.reply('Повторите ввод, ДА или НЕТ нажанием на кнопки или словами')
 
     else:
         await message.reply('Повторите ввод, ДА или НЕТ нажанием на кнопки или словами')
 
-    await state.finish()  # Выключаем состояние
+    # await state.finish()  # Выключаем состояние
 
 
 changelog = 'реализована отмена'

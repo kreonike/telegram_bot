@@ -413,7 +413,7 @@ async def spec_command(message: types.Message):
     @dp.message_handler(text='ПОЛИКЛИНИКА 4')
     async def spec_command(message: types.Message, state: FSMContext):
         print('поликлиника 4')
-        await state.update_data(pol='520101000000591')
+        await state.update_data(pol='520101000000181')
 
         await message.reply('Выберите специальность', reply_markup=spec_client)
         await ClientRequests.spec.set()  # Устанавливаем состояние

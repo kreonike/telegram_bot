@@ -17,7 +17,7 @@ MedStaffFact_id = {}
 MedStaffFact_id = []
 data_time_final = {}
 
-version = '7.89 pre-release'
+version = '1.8 release'
 creator = '@rapot'
 
 bot = Bot(bot_token)

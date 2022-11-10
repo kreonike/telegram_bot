@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 import base_ecp
 import requests
@@ -11,6 +12,9 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.utils import executor
 from config import bot_token, login_ecp, password_ecp
 from keyboards.client_kb import kb_client, spec_client, pol_client, menu_client, ident_client
+import logger
+
+logging.basicConfig(level=logging.INFO, format='%(asctimie)s - %(levelname)s - %(message)s')
 
 spec_dict_final = {}
 MedStaffFact_id = {}
@@ -70,6 +74,8 @@ def authorization():
 
     return session
 
+
+logging.info(f' authorization {authorization()}')
 
 def search_date(MedStaffFact_id):
     print(f' search_date - MedStaffFact_id: {MedStaffFact_id}')

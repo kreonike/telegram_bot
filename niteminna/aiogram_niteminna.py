@@ -615,6 +615,7 @@ def del_entry(message_delete, entry_data):
 
 
 def search_spec_doctor(base_ecp_spec, pol):
+    print(base_ecp_spec)
     ##авторизация
     authorization()
     session = authorization()
@@ -663,6 +664,10 @@ def search_spec_doctor(base_ecp_spec, pol):
         return data_lpu_person_old
 
 
+def spec_check(spec, base_ecp_medspecoms_id):
+    return spec in base_ecp_medspecoms_id
+
+
 # spec_client.add(menu)
 @dp.message_handler(state=ClientRequests.spec)
 async def get_spec(message: types.Message, state: FSMContext):
@@ -674,8 +679,8 @@ async def get_spec(message: types.Message, state: FSMContext):
         await ClientRequests.main_menu.set()  # Устанавливаем состояние
         await message.reply('выберите раздел', reply_markup=kb_client)
         await state.finish()  # Выключаем состояние
-
         print('выход тут')
+
 
     else:
         data_lpu_person = {}
@@ -693,78 +698,92 @@ async def get_spec(message: types.Message, state: FSMContext):
         print(f' pol = {pol}')
         await ClientRequests.next()
 
-        base_ecp_spec = base_ecp.medspecoms_id[spec]
-        print(f' базовая ид специальности: {base_ecp_spec}')
-
-        data_lpu_person_old = search_spec_doctor(base_ecp_spec, pol)
-        #    ##авторизация
-        #    authorization()
-        #    session = authorization()
-        # ########################################################
-        #
-        #    search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
-        #                        f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
-        #
-        #
-        #
-        #    result_lpu_person = requests.get(search_lpu_person)
-        #    data_lpu_person_old = result_lpu_person.json()
-        #    print(f' MedStaffFact_id data_lpu_person_old: {data_lpu_person_old}')
-
-        # проверка на имеющееся расписание у врача в принципе и исключаем конкретные специальности по Post_id
-        #
-        print(f' 22 на выходе data_lpu_person_old: {data_lpu_person_old}')
-        data_lpu_person = []
-        print(data_lpu_person_old)
-        for key in data_lpu_person_old:
-            # print(key)
-            if key['RecType_id'] == '1' and key['Post_id'] != '520101000000049' and key['Person_id'] != '5656886' and \
-                    key['Person_id'] != '7611212' and key['Person_id'] != '10168043':
-                data_lpu_person.append(key)
-                # print(key)
-
-        print(f' HHHHH data_lpu_person: {data_lpu_person}')
-
-        global post_id
-
-        for key in data_lpu_person:
-            post_id = key['Post_id']
-
-        # print(post_id)
-
-        if data_lpu_person == []:
-            await bot.send_message(message.from_id,
-                                   'К данному специалисту запись на 5 ближайших дней отсутствует',
-                                   reply_markup=kb_client)
+        base_ecp_medspecoms_id = base_ecp.medspecoms_id
+        t = checking_spec = spec_check(spec, base_ecp_medspecoms_id)
+        if t == False:
             await ClientRequests.main_menu.set()  # Устанавливаем состояние
-            # await message.reply('выберите раздел', reply_markup=kb_client)
+            await message.reply('Неверный ввод специальности, повторите запрос', reply_markup=kb_client)
             await state.finish()  # Выключаем состояние
 
-
-
         else:
-            doc = ReplyKeyboardMarkup(resize_keyboard=True)
-            spec_dict_final = {}
-            print(f't0: {spec_dict_final}')
-            for i in data_lpu_person:
-                name = i['PersonSurName_SurName']
-                spec_dict_final[name] = i['MedStaffFact_id']
-            print(f' ? post_id: {post_id}')
-            print(f' это dict: {spec_dict_final}')
 
-            await state.update_data(spec_dict_final=spec_dict_final)
-            print(spec_dict_final)
+            base_ecp_spec = base_ecp.medspecoms_id[spec]
 
-            doc.add(menu)
+            print(f' базовая ид специальности: {base_ecp_spec}')
 
-            # тут создаются кнопки врачей
-            for key in spec_dict_final:
-                doc.add(key)
-            await message.reply('К кому хотим записаться ?', reply_markup=doc)
-            await ClientRequests.doctor.set()  # Устанавливаем состояние
+            await ClientRequests.main_menu.set()  # Устанавливаем состояние
+            await state.finish()  # Выключаем состояние
 
-        # print(f' !! {post_id}')
-        print(f't1: {spec_dict_final}')
+            data_lpu_person_old = search_spec_doctor(base_ecp_spec, pol)
+            #    ##авторизация
+            #    authorization()
+            #    session = authorization()
+            # ########################################################
+            #
+            #    search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
+            #                        f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
+            #
+            #
+            #
+            #    result_lpu_person = requests.get(search_lpu_person)
+            #    data_lpu_person_old = result_lpu_person.json()
+            #    print(f' MedStaffFact_id data_lpu_person_old: {data_lpu_person_old}')
+
+            # проверка на имеющееся расписание у врача в принципе и исключаем конкретные специальности по Post_id
+            #
+            print(f' 22 на выходе data_lpu_person_old: {data_lpu_person_old}')
+            data_lpu_person = []
+            print(data_lpu_person_old)
+            for key in data_lpu_person_old:
+                # print(key)
+                if key['RecType_id'] == '1' and key['Post_id'] != '520101000000049' and key[
+                    'Person_id'] != '5656886' and \
+                        key['Person_id'] != '7611212' and key['Person_id'] != '10168043':
+                    data_lpu_person.append(key)
+                    # print(key)
+
+            print(f' HHHHH data_lpu_person: {data_lpu_person}')
+
+            global post_id
+
+            for key in data_lpu_person:
+                post_id = key['Post_id']
+
+            # print(post_id)
+
+            if data_lpu_person == []:
+                await bot.send_message(message.from_id,
+                                       'К данному специалисту запись на 5 ближайших дней отсутствует',
+                                       reply_markup=kb_client)
+                await ClientRequests.main_menu.set()  # Устанавливаем состояние
+                # await message.reply('выберите раздел', reply_markup=kb_client)
+                await state.finish()  # Выключаем состояние
+
+
+
+            else:
+                doc = ReplyKeyboardMarkup(resize_keyboard=True)
+                spec_dict_final = {}
+                print(f't0: {spec_dict_final}')
+                for i in data_lpu_person:
+                    name = i['PersonSurName_SurName']
+                    spec_dict_final[name] = i['MedStaffFact_id']
+                print(f' ? post_id: {post_id}')
+                print(f' это dict: {spec_dict_final}')
+
+                await state.update_data(spec_dict_final=spec_dict_final)
+                print(spec_dict_final)
+
+                doc.add(menu)
+
+                # тут создаются кнопки врачей
+                for key in spec_dict_final:
+                    doc.add(key)
+                await message.reply('К кому хотим записаться ?', reply_markup=doc)
+                await ClientRequests.doctor.set()  # Устанавливаем состояние
+
+            # print(f' !! {post_id}')
+            print(f't1: {spec_dict_final}')
 
 
 @dp.message_handler(state=ClientRequests.doctor)

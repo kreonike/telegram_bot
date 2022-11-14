@@ -2,6 +2,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemo
 
 info = KeyboardButton('АДРЕСА И ТЕЛЕФОНЫ')
 
+call = KeyboardButton('ВЫЗОВ ВРАЧА НА ДОМ')
 spec = KeyboardButton('ЗАПИСЬ К ВРАЧУ')
 cancel = KeyboardButton('ОТМЕНА ЗАПИСИ')
 checking = KeyboardButton('ПРОВЕРКА ЗАПИСИ')
@@ -49,7 +50,7 @@ choise_pol2 = ReplyKeyboardMarkup(resize_keyboard=True)
 
 # kb_client.add(info).add(spec).add(doctor).add(woker)
 # kb_client.row(info, spec, doctor, woker)
-kb_client.add(info, spec).row(checking, cancel)
+kb_client.add(info, spec).row(checking, cancel).add(call)
 # spec_client.add(ther, vac, dis, sto, uro, sto_ther, xir,endo,oto)
 spec_client.add(menu).add(ther, sto, uro, vop, xir, endo, oto, onko, oftalmo)
 pol_client.add(menu).add(pol1, pol2).row(pol3, pol4)

@@ -1,5 +1,6 @@
 import datetime
 import logging
+# from PIL import Image
 
 import base_ecp
 import requests
@@ -12,9 +13,12 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.utils import executor
 from config import bot_token, login_ecp, password_ecp
 from keyboards.client_kb import kb_client, spec_client, pol_client, menu_client, ident_client
-import logger
+import search_spec_doctor, authorization, search_polis, search_date, \
+    search_time, search_time2, search_person, entry_status, search_entry, time_delete, entry_home
 
-logging.basicConfig(level=logging.INFO, format='%(asctimie)s - %(levelname)s - %(message)s')
+# logging.basicConfig(level=logging.INFO, format='%(asctimie)s - %(levelname)s - %(message)s')
+# logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 spec_dict_final = {}
 MedStaffFact_id = {}
@@ -57,259 +61,15 @@ class ClientRequests(StatesGroup):
     post_id = State()
     message_time = State()
     spec_dict_final = State()
-
-
-# await state.finish()
-
-
-# authorization
-def authorization():
-    login = login_ecp
-    password = password_ecp
-    link = 'https://ecp.mznn.ru/api/user/login' + '?Login=' + login + '&Password=' + password
-
-    responce = requests.get(link)
-    data_session = responce.json()
-    session = data_session['sess_id']
-
-    return session
-
-
-logging.info(f' authorization {authorization()}')
-
-def search_date(MedStaffFact_id):
-    print(f' search_date - MedStaffFact_id: {MedStaffFact_id}')
-    ##авторизация
-    authorization()
-    session = authorization()
-
-    # data_date_list = []
-
-    now = datetime.datetime.now()
-
-    tomorrow = now + datetime.timedelta(days=1)
-    print(f' завтра: {tomorrow}')
-    today = now.strftime("%Y-%m-%d")
-    tomorrow = tomorrow.strftime("%Y-%m-%d")
-
-    result = now + datetime.timedelta(days=4)
-    TimeTableGraf_end = result.date()
-
-    search_date = (f' https://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafFreeDate?MedStaffFact_id={MedStaffFact_id}'
-                   f'&TimeTableGraf_beg={tomorrow}&TimeTableGraf_end={TimeTableGraf_end}&sess_id={session}')
-
-    result_date = requests.get(search_date)
-    data_date = result_date.json()
-    print(f' data_date::: {data_date}')
-
-    return data_date
-
-
-def search_time2(MedStaffFact_id, TimeTableGraf_begTime):
-    print(f' получено значение в search_time1: {MedStaffFact_id}')
-    print(f' получено значение в search_time2: {TimeTableGraf_begTime}')
-    TimeTableGraf_begTime = TimeTableGraf_begTime.partition(' ')[0]
-    print(f' правильный: {TimeTableGraf_begTime}')
-
-    ##авторизация
-    authorization()
-    session = authorization()
-
-    # TODO тип бирки
-
-    search_time = f'http://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafFreeTime?MedStaffFact_id={MedStaffFact_id}' \
-                  f'&TimeTableGraf_begTime={TimeTableGraf_begTime}&sess_id={session}'
-
-    result_MedStaffFact_id = requests.get(search_time)
-    data_MedStaffFact_id = result_MedStaffFact_id.json()
-    print(f' дата для search_time: {data_MedStaffFact_id}')
-
-    data_time_dict = {}
-
-    for k in data_MedStaffFact_id['data']:
-        TimeTableGraf_begTime = k['TimeTableGraf_begTime']
-        data_time_dict[TimeTableGraf_begTime] = k['TimeTableGraf_id']
-
-    print(f' тут финальный словарь из search_time: {data_time_dict}')
-    return data_time_dict
-
-
-def search_time(MedStaffFact_id, data_date_dict):
-    print(f' получено значение в search_time1: {MedStaffFact_id}')
-    print(f' получено значение в search_time2: {data_date_dict}')
-
-    TimeTableGraf_begTime_list = []
-    for key in data_date_dict['data']:
-        TimeTableGraf_begTime_list.append(key['TimeTableGraf_begTime'])
-    print(TimeTableGraf_begTime_list)
-
-    ##авторизация
-    authorization()
-    session = authorization()
-
-    data_time_list = []
-    for item in TimeTableGraf_begTime_list:
-
-        search_time = f'http://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafFreeTime?MedStaffFact_id={MedStaffFact_id}' \
-                      f'&TimeTableGraf_begTime={item}&sess_id={session}'
-
-        result_MedStaffFact_id = requests.get(search_time)
-        data_time_dict = result_MedStaffFact_id.json()
-        print(data_time_dict)
-        for item in data_time_dict['data']:
-            TimeTableGraf_id = item['TimeTableGraf_id']
-            search_type = f'http://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafById?' \
-                          f'TimeTableGraf_id={TimeTableGraf_id}&sess_id={session}'
-            result_type = requests.get(search_type)
-            data_type_dict = result_type.json()
-            r = data_type_dict
-            # print(f' r = {r}')
-            for j in r['data']:
-                if j['TimeTableType_id'] == '10' or j['TimeTableType_id'] == '1' or j['TimeTableType_id'] == '11':
-                    data_time_list.append(j)
-                else:
-                    pass
-    return data_time_list
-
+    call_home = State()
+    address = State()
+    phone = State()
+    reason = State()
+    call_checking = State()
+    call_entry = State()
 
 def check_timetabletype(data_time_final):
     pass
-
-
-def search_polis(polis):
-    print(f' получен полис в функцию search_polis: {polis}')
-    ##авторизация
-    authorization()
-    session = authorization()
-
-    search_polis = f'https://ecp.mznn.ru/api/Polis?Polis_Num={polis}&sess_id={session}'
-    result_polis = requests.get(search_polis)
-    polis_data = result_polis.json()
-    print(f' дата для search_time: {polis_data}')
-    return polis_data
-
-
-def search_person(person_id):
-    print(f' получен person_id в функцию search_person: {person_id}')
-    ##авторизация
-    authorization()
-    session = authorization()
-
-    search_person = f'https://ecp.mznn.ru/api/Person?Person_id={person_id}&sess_id={session}'
-    result_person = requests.get(search_person)
-    person_data = result_person.json()
-    print(f' дата в person_id: {person_data}')
-    return person_data
-
-
-def search_entry(person_id, TimeTableGraf_id):
-    print(f' в функцию search_entry получен {person_id}')
-    ##авторизация
-    authorization()
-    session = authorization()
-
-    ##сама запись post запрос
-    search_entry = f'https://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafWrite?Person_id={person_id}&' \
-                   f'TimeTableGraf_id={TimeTableGraf_id}&sess_id={session}'
-    result_entry = requests.post(search_entry)
-    entry_date = result_entry.json()
-
-    # print(entry_date)
-
-    ##статус бирки
-    status_entry = f'https://ecp.mznn.ru/api/TimeTableListbyPatient?Person_id={person_id}&sess_id={session}'
-    result_status = requests.get(status_entry)
-    status_date = result_status.json()
-
-    # print(status_date)
-
-    return entry_date, status_date
-
-
-def entry_status(person_id):
-    ##авторизация
-    authorization()
-    session = authorization()
-
-    ##статус бирки
-    status_entry = f'https://ecp.mznn.ru/api/TimeTableListbyPatient?Person_id={person_id}&sess_id={session}'
-    result_status = requests.get(status_entry)
-    status_date = result_status.json()
-    # print(status_date)
-    return status_date
-
-
-def time_delete(TimeTable_id, TimeTableSource):
-    ##авторизация
-    authorization()
-    session = authorization()
-    print(f' TimeTableSource: {TimeTableSource}')
-    FailCause = 1
-    ##удаляем бирку
-    delete_time = f'https://ecp.mznn.ru/api/TimeTable?TimeTable_id={TimeTable_id}&TimeTableSource={TimeTableSource}' \
-                  f'&FailCause={FailCause}&sess_id={session}'
-    result_detele = requests.delete(delete_time)
-    status_delete = result_detele.json()
-    print(f' status_delete::: {status_delete}')
-    if status_delete['error_code'] == 6:  # or status_delete['error_code'] != 0:
-        print('Бирка не найдена в системе.')
-        error = 6
-        return error
-    else:
-        return status_delete
-
-
-def search_doctor(d_final):
-    fast_id = base_ecp.medspecoms_id.values()
-    print(f' передано значение: {d_final}')
-
-    ###мне вот эта конструкция не нравится
-
-    id_fast = 1
-
-    ###############################
-
-    ##авторизация
-    authorization()
-    session = authorization()
-
-    for i in fast_id:
-        search_fast_id = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={i}&' \
-                         f'{lpu_id}&sess_id={session}'
-
-        result_fast_id = requests.get(search_fast_id)
-        data_fast_id = result_fast_id.json()
-
-        for k in data_fast_id['data']:
-            if d_final == k['PersonSurName_SurName']:
-                id_fast = k
-            else:
-                pass
-    return id_fast
-
-
-# некоторые переменные
-####
-
-lpu_id = 'Lpu_id=2762'
-
-
-####
-
-
-def search_double(post_id, check_entry_data, date_whithout_time):
-    for j in check_entry_data['data']['TimeTable']:
-
-        if j['Post_id'] == post_id and j['TimeTable_begTime'].partition(' ')[
-            0] == date_whithout_time:
-            print('НАЙДЕНО СОВПАДЕНИЕ')
-            print('запись к одному и тому же специалисту на один и тот же день запрещена')
-            error = 6
-            return error
-        else:
-            print('совпадений не найдено')
-            error = 0
-            return error
 
 
 @dp.message_handler(commands=['start'])
@@ -384,6 +144,114 @@ async def woker_command(message: types.Message):
         f' пн-пт 7:30-19:30', reply_markup=kb_client)
 
 
+@dp.message_handler(text='ВЫЗОВ ВРАЧА НА ДОМ')
+async def call_home(message: types.Message):
+    await bot.send_message(message.from_id, 'Введите свой полис ОМС: ', reply_markup=menu_client)
+    await ClientRequests.call_checking.set()  # Устанавливаем состояние
+
+
+@dp.message_handler(state=ClientRequests.call_checking)
+async def get_person_polis(message: types.Message, state: FSMContext):
+    message_polis = message.text
+
+    if message_polis == 'вернуться в меню':
+        await ClientRequests.main_menu.set()  # Устанавливаем состояние
+        await message.reply('выберите раздел', reply_markup=kb_client)
+        await state.finish()  # Выключаем состояние
+
+    elif len(message_polis) != 16:
+        await message.reply('Неверный ввод, введите 16 цифр номера полиса', reply_markup=menu_client)
+
+    elif message_polis.isdigit() == False:
+        await message.reply('Неверный ввод, вводите только цифры, без символов и пробелов', reply_markup=menu_client)
+
+    elif message_polis.isdigit() == True:
+        await bot.send_message(message.from_id, 'Идёт поиск, подождите ', reply_markup=menu_client)
+        polis_data = search_polis.search_polis(message_polis)
+        person = search_person.search_person(polis_data['data'][0]['Person_id'])
+        person_id = person['data'][0]['Person_id']
+        check_entry_data = entry_status.entry_status(person_id)
+
+        PersonSurName_SurName = person['data'][0]['PersonSurName_SurName']
+        PersonFirName_FirName = person['data'][0]['PersonFirName_FirName']
+        PersonSecName_SecName = person['data'][0]['PersonSecName_SecName']
+        PersonBirthDay_BirthDay = person['data'][0]['PersonBirthDay_BirthDay']
+
+        await message.reply(
+            f' Фамилия: {PersonSurName_SurName}\n'
+            f' Имя: {PersonFirName_FirName}\n'
+            f' Отчество: {PersonSecName_SecName}\n'
+            f' Дата рождения: {PersonBirthDay_BirthDay}\n')
+
+        await bot.send_message(message.from_id, 'Это Вы ?', reply_markup=ident_client)
+        await ClientRequests.call_entry.set()  # Устанавливаем состояние
+
+        @dp.message_handler(state=ClientRequests.call_entry)
+        async def get_person(message: types.Message, state: FSMContext):
+            message_entry = message.text
+
+            if message_entry == 'вернуться в меню':
+                await ClientRequests.main_menu.set()  # Устанавливаем состояние
+                await message.reply('выберите раздел', reply_markup=kb_client)
+                await state.finish()  # Выключаем состояние
+
+            elif message_entry == 'ДА':
+                await bot.send_message(message.from_id, 'Введите свой адрес (улица, дом, квартира:',
+                                       reply_markup=menu_client)
+                await ClientRequests.call_home.set()  # Устанавливаем состояние
+                await state.finish()  # Выключаем состояние
+
+            elif message_entry == 'НЕТ':
+
+                await ClientRequests.main_menu.set()  # Устанавливаем состояние
+                await bot.send_message(message.from_id, 'выберите раздел', reply_markup=kb_client)
+                await state.finish()  # Выключаем состояние
+
+            elif message_entry != 'ДА' or message_entry != 'НЕТ' or message_entry != 'вернуться в меню':
+                await message.reply('Повторите ввод, ДА или НЕТ нажанием на кнопки или словами')
+
+            else:
+                await message.reply('Повторите ввод, ДА или НЕТ нажанием на кнопки или словами')
+
+
+@dp.message_handler(state=ClientRequests.call_home)
+async def checking(message: types.Message, state: FSMContext):
+    polis_mess = message.text
+    polis_data = search_polis.search_polis(polis_mess)
+    for key in polis_data['data']:
+        person_id = key['Person_id']
+    await bot.send_message(message.from_id, 'Введите свой адрес (улица, дом, квартира:', reply_markup=menu_client)
+    await ClientRequests.address.set()  # Устанавливаем состояние
+
+    @dp.message_handler(state=ClientRequests.address)
+    async def checking(message: types.Message, state: FSMContext):
+        address_mess = message.text
+        print(address_mess)
+        await bot.send_message(message.from_id,
+                               'Введите свой номер телефона (если Вам не смогут дозвонится, вызор будет анулирован:',
+                               reply_markup=menu_client)
+        await ClientRequests.phone.set()  # Устанавливаем состояние
+
+        @dp.message_handler(state=ClientRequests.phone)
+        async def checking(message: types.Message, state: FSMContext):
+            phone_mess = message.text
+            print(phone_mess)
+            await bot.send_message(message.from_id, 'Введите причину вызова,  например (температура, давление):',
+                                   reply_markup=menu_client)
+            await ClientRequests.reason.set()  # Устанавливаем состояние
+
+            @dp.message_handler(state=ClientRequests.reason)
+            async def checking(message: types.Message, state: FSMContext):
+                reason_mess = message.text
+                print(reason_mess)
+                await bot.send_message(message.from_id, f' Вы ввели:\n'
+                                                        f' Адресс: {address_mess}'
+                                                        f' Телефон: {phone_mess}'
+                                                        f' Причина вызова: {reason_mess}', reply_markup=menu_client)
+
+                # entry_home.entry_home(person_id)
+
+
 @dp.message_handler(commands=['entry'], state=None)
 async def write_command(message: types.Message):
     await message.answer(version, reply_markup=kb_client)
@@ -451,7 +319,7 @@ async def checking(message: types.Message, state: FSMContext):
     else:
 
         print('отмена')
-        polis_data = search_polis(mess)
+        polis_data = search_polis.search_polis(mess)
         print(polis_data)
 
         if polis_data['data'] == []:
@@ -460,10 +328,10 @@ async def checking(message: types.Message, state: FSMContext):
         else:
 
             print(polis_data['data'][0]['Polis_id'])
-            person_data = search_person(polis_data['data'][0]['Person_id'])
+            person_data = search_person.search_person(polis_data['data'][0]['Person_id'])
             print(person_data)
             person_id = person_data['data'][0]['Person_id']
-            entry_data = entry_status(person_id)
+            entry_data = entry_status.entry_status(person_id)
 
             print(f' entry_ data: {entry_data}')
 
@@ -515,7 +383,7 @@ async def checking(message: types.Message, state: FSMContext):
     else:
 
         print('отмена')
-        polis_data = search_polis(mess)
+        polis_data = search_polis.search_polis(mess)
         print(polis_data)
 
         if polis_data['data'] == []:
@@ -524,10 +392,10 @@ async def checking(message: types.Message, state: FSMContext):
         else:
 
             print(polis_data['data'][0]['Polis_id'])
-            person_data = search_person(polis_data['data'][0]['Person_id'])
+            person_data = search_person.search_person(polis_data['data'][0]['Person_id'])
             print(person_data)
             person_id = person_data['data'][0]['Person_id']
-            entry_data = entry_status(person_id)
+            entry_data = entry_status.entry_status(person_id)
             await state.update_data(entry_data_delete=entry_data)
 
             print(f' entry_data: {entry_data}')
@@ -605,7 +473,7 @@ def del_entry(message_delete, entry_data):
         if key['TimeTable_id'] == message_delete:
             print('TimeTable_id = message_delete')
             TimeTableSource = 'Graf'
-            status_del = time_delete(message_delete, TimeTableSource)
+            status_del = time_delete.time_delete(message_delete, TimeTableSource)
             print(f' status_del: ! {status_del}')
 
             if status_del['data'] == []:
@@ -620,54 +488,54 @@ def del_entry(message_delete, entry_data):
             return del_error
 
 
-def search_spec_doctor(base_ecp_spec, pol):
-    print(base_ecp_spec)
-    ##авторизация
-    authorization()
-    session = authorization()
-
-    if base_ecp_spec == 520101000000160:
-        print('меняем специальности')
-        stomat = ['520101000000160', '520101000000197', '520101000000165']
-
-        combile_data_lpu_person_old = []
-        data_lpu_person_list = []
-        for i in stomat:
-            # print(i)
-            search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={i}&' \
-                                f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
-            print(f'  (((((((((( search_lpu_person: {search_lpu_person}')
-
-            result_lpu_person = requests.get(search_lpu_person)
-            # data_lpu_person_old.append(result_lpu_person.json())
-            data_lpu_person_old_ = result_lpu_person.json()
-            # print(data_lpu_person_old_)
-            combile_data_lpu_person_old.append(data_lpu_person_old_)
-        print(f' ? combile_data_lpu_person_old: {combile_data_lpu_person_old}')
-        for member in combile_data_lpu_person_old:
-            for n in member['data']:
-                data_lpu_person_list.append(n)
-                # print(n)
-
-        # print(f' data_lpu_person_old в цикле: {data_lpu_person_old}')
-        # data_lpu_person_old = data_lpu_person_old['data']
-        # print(f' data_lpu_person_old на выходе из цикла: {data_lpu_person_old}')
-        # print(data_lpu_person_old['data'])
-        data_lpu_person_old = data_lpu_person_list
-        print(f' выход из функции data_lpu_person_old: {data_lpu_person_old}')
-        return data_lpu_person_old
-
-    else:
-
-        search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
-                            f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
-
-        result_lpu_person = requests.get(search_lpu_person)
-        data_lpu_person_old_ = result_lpu_person.json()
-        data_lpu_person_old = data_lpu_person_old_['data']
-
-        print(f' MedStaffFact_id data_lpu_person_old: {data_lpu_person_old}')
-        return data_lpu_person_old
+# def search_spec_doctor(base_ecp_spec, pol):
+#     print(base_ecp_spec)
+#     ##авторизация
+#     authorization()
+#     session = authorization()
+#
+#     if base_ecp_spec == 520101000000160:
+#         print('меняем специальности')
+#         stomat = ['520101000000160', '520101000000197', '520101000000165']
+#
+#         combile_data_lpu_person_old = []
+#         data_lpu_person_list = []
+#         for i in stomat:
+#             # print(i)
+#             search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={i}&' \
+#                                 f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
+#             print(f'  (((((((((( search_lpu_person: {search_lpu_person}')
+#
+#             result_lpu_person = requests.get(search_lpu_person)
+#             # data_lpu_person_old.append(result_lpu_person.json())
+#             data_lpu_person_old_ = result_lpu_person.json()
+#             # print(data_lpu_person_old_)
+#             combile_data_lpu_person_old.append(data_lpu_person_old_)
+#         print(f' ? combile_data_lpu_person_old: {combile_data_lpu_person_old}')
+#         for member in combile_data_lpu_person_old:
+#             for n in member['data']:
+#                 data_lpu_person_list.append(n)
+#                 # print(n)
+#
+#         # print(f' data_lpu_person_old в цикле: {data_lpu_person_old}')
+#         # data_lpu_person_old = data_lpu_person_old['data']
+#         # print(f' data_lpu_person_old на выходе из цикла: {data_lpu_person_old}')
+#         # print(data_lpu_person_old['data'])
+#         data_lpu_person_old = data_lpu_person_list
+#         print(f' выход из функции data_lpu_person_old: {data_lpu_person_old}')
+#         return data_lpu_person_old
+#
+#     else:
+#
+#         search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
+#                             f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
+#
+#         result_lpu_person = requests.get(search_lpu_person)
+#         data_lpu_person_old_ = result_lpu_person.json()
+#         data_lpu_person_old = data_lpu_person_old_['data']
+#
+#         print(f' MedStaffFact_id data_lpu_person_old: {data_lpu_person_old}')
+#         return data_lpu_person_old
 
 
 def spec_check(spec, base_ecp_medspecoms_id):
@@ -679,7 +547,7 @@ def spec_check(spec, base_ecp_medspecoms_id):
 async def get_spec(message: types.Message, state: FSMContext):
     await bot.send_message(message.chat.id, 'Идёт поиск, доступных для записи врачей, ожидайте')
     global spec_dict_final
-    print(f' на входе в get_spec {spec_dict_final}')
+    #print(f' на входе в get_spec {spec_dict_final}')
     question_spec = message.text
     if question_spec == 'вернуться в меню':
         await ClientRequests.main_menu.set()  # Устанавливаем состояние
@@ -693,6 +561,7 @@ async def get_spec(message: types.Message, state: FSMContext):
         spec_final = question_spec.lower()
         print(f' получено значение: {question_spec}')
         print(f' изменено на: {spec_final}')
+
 
         await state.update_data(spec=spec_final)
 
@@ -715,12 +584,13 @@ async def get_spec(message: types.Message, state: FSMContext):
 
             base_ecp_spec = base_ecp.medspecoms_id[spec]
 
-            print(f' базовая ид специальности: {base_ecp_spec}')
+            # print(f' базовая ид специальности: {base_ecp_spec}')
+            logging.info(f' запрошена специальность: {base_ecp_spec}')
 
             await ClientRequests.main_menu.set()  # Устанавливаем состояние
             await state.finish()  # Выключаем состояние
 
-            data_lpu_person_old = search_spec_doctor(base_ecp_spec, pol)
+            data_lpu_person_old = search_spec_doctor.search_spec_doctor(base_ecp_spec, pol)
             #    ##авторизация
             #    authorization()
             #    session = authorization()
@@ -826,10 +696,10 @@ async def get_doctor(message: types.Message, state: FSMContext):
 
         """поиск даты"""
         data_date_dict = {}
-        data_date_dict = search_date(MedStaffFact_id)
+        data_date_dict = search_date.search_date(MedStaffFact_id)
         print(f' это дата лист из функции: {data_date_dict}')
 
-        data_time_final = search_time(MedStaffFact_id, data_date_dict)
+        data_time_final = search_time.search_time(MedStaffFact_id, data_date_dict)
         print(f' data_time_final = {data_time_final}')
 
         if data_time_final == []:
@@ -875,7 +745,7 @@ async def get_person_time(message: types.Message, state: FSMContext):
         MedStaffFact_id = data.get('MedStaffFact_id')
 
         print(f' message_time в else: {message_time}')
-        data_time_final2 = search_time2(MedStaffFact_id, message_time)
+        data_time_final2 = search_time2.search_time2(MedStaffFact_id, message_time)
         print(f' data_time_final2: {data_time_final2}')
         TimeTableGraf_id = data_time_final2[message_time]
 
@@ -915,16 +785,16 @@ async def get_person_polis(message: types.Message, state: FSMContext):
     elif message_polis.isdigit() == True:
         await bot.send_message(message.from_id, 'Идёт поиск, подождите ',
                                reply_markup=menu_client)
-        polis_data = search_polis(message_polis)
+        polis_data = search_polis.search_polis(message_polis)
         print(f' polis_num из функции: {polis_data}')
-        person = search_person(polis_data['data'][0]['Person_id'])
+        person = search_person.search_person(polis_data['data'][0]['Person_id'])
         person_id = person['data'][0]['Person_id']
         print(f' получена из функции: {person_id}')
 
         print('=========ПРОВЕРКА=========')
         print(f' post_id для check: {post_id}')
         print(f' Person_id: {person_id}')
-        check_entry_data = entry_status(person_id)
+        check_entry_data = entry_status.entry_status(person_id)
         print(check_entry_data)
 
         data = await state.get_data()
@@ -1001,8 +871,9 @@ async def get_person(message: types.Message, state: FSMContext):
             print(f' TimeTableGraf_id: {TimeTableGraf_id}')
             print(f' person_id: {person_id}')
 
-            entry_data = search_entry(person_id, TimeTableGraf_id)
+            entry_data = search_entry.search_entry(person_id, TimeTableGraf_id)
             print(f' entry_data: {entry_data}')
+            logging.info(f' ЗАПИСЬ {entry_data}')
             await bot.send_message(message.from_id,
                                    f" ВЫ УСПЕШНО ЗАПИСАНЫ к:"
                                    f" {entry_data[1]['data']['TimeTable'][0]['Post_name']}"

@@ -1,9 +1,20 @@
-import datetime
 import logging
+import datetime
 # from PIL import Image
 
+import logging
+
 import base_ecp
-import requests
+import entry_home
+import entry_status
+import search_date
+import search_entry
+import search_person
+import search_polis
+import search_spec_doctor
+import search_time
+import search_time2
+import time_delete
 from aiogram import Bot, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import Dispatcher
@@ -11,10 +22,10 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.utils import executor
-from config import bot_token, login_ecp, password_ecp
+from config import bot_token
 from keyboards.client_kb import kb_client, spec_client, pol_client, menu_client, ident_client
-import search_spec_doctor, authorization, search_polis, search_date, \
-    search_time, search_time2, search_person, entry_status, search_entry, time_delete, entry_home
+
+# from PIL import Image
 
 # logging.basicConfig(level=logging.INFO, format='%(asctimie)s - %(levelname)s - %(message)s')
 # logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s')
@@ -70,6 +81,7 @@ class ClientRequests(StatesGroup):
     call_address = State()
     call_entry_question = State()
     call_entry_finish = State()
+
 
 def check_timetabletype(data_time_final):
     pass
@@ -274,9 +286,11 @@ async def checking(message: types.Message, state: FSMContext):
             else:
                 HomeVisit_id = result_call_entry['data']['HomeVisit_id']
                 await ClientRequests.main_menu.set()  # Устанавливаем состояние
+                now = datetime.datetime.now()
+                HomeVisit_setDT = now.strftime("%d.%m.%Y %H:%M")
                 await bot.send_message(message.from_id,
-                                       f'Вы успешно записаны, ожидайте звонка, идентификатор: {HomeVisit_id}',
-                                       parse_mode="Markdown")
+                                       f'Вы успешно записаны, дата записи: {HomeVisit_setDT}\n')
+                await bot.send_message(message.chat.id, f" идентификатор: `{HomeVisit_id}`", parse_mode="Markdown")
                 await state.finish()  # Выключаем состояние
 
             # wait state.finish()  # Выключаем состояние
@@ -589,7 +603,7 @@ def spec_check(spec, base_ecp_medspecoms_id):
 async def get_spec(message: types.Message, state: FSMContext):
     await bot.send_message(message.chat.id, 'Идёт поиск, доступных для записи врачей, ожидайте')
     global spec_dict_final
-    #print(f' на входе в get_spec {spec_dict_final}')
+    # print(f' на входе в get_spec {spec_dict_final}')
     question_spec = message.text
     if question_spec == 'вернуться в меню':
         await ClientRequests.main_menu.set()  # Устанавливаем состояние
@@ -603,7 +617,6 @@ async def get_spec(message: types.Message, state: FSMContext):
         spec_final = question_spec.lower()
         print(f' получено значение: {question_spec}')
         print(f' изменено на: {spec_final}')
-
 
         await state.update_data(spec=spec_final)
 

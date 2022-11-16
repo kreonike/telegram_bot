@@ -288,6 +288,9 @@ async def get_person(message: types.Message, state: FSMContext):
 
             await ClientRequests.main_menu.set()  # Устанавливаем состояние
             await bot.send_message(message.from_id, 'У вас уже есть необслуженная запись', reply_markup=kb_client)
+            await bot.send_message(message.from_id, 'выберите раздел', reply_markup=kb_client)
+            await state.finish()  # Выключаем состояние
+
             await state.finish()  # Выключаем состояние
 
         else:

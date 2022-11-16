@@ -210,6 +210,7 @@ async def get_person_polis(message: types.Message, state: FSMContext):
 @dp.message_handler(state=ClientRequests.call_entry)
 async def get_person(message: types.Message, state: FSMContext):
     message_entry = message.text
+    print(person_id)
 
     if message_entry == 'вернуться в меню':
         await ClientRequests.main_menu.set()  # Устанавливаем состояние
@@ -260,6 +261,7 @@ async def checking(message: types.Message, state: FSMContext):
     global reason_mess
     reason_mess = message.text
     print(reason_mess)
+    print(person_id)
     await bot.send_message(message.from_id, f' Вы ввели:\n'
                                             f' Адресс: {address_mess}\n'
                                             f' Телефон: {phone_mess}\n'
@@ -267,49 +269,50 @@ async def checking(message: types.Message, state: FSMContext):
                                             f' Всё верно ?', reply_markup=ident_client)
     await ClientRequests.call_entry_question.set()
 
-    @dp.message_handler(state=ClientRequests.call_entry_question)
-    async def get_person(message: types.Message, state: FSMContext):
-        message_entry = message.text
 
-        if message_entry == 'вернуться в меню':
-            await ClientRequests.main_menu.set()  # Устанавливаем состояние
-            await message.reply('выберите раздел', reply_markup=kb_client)
-            await state.finish()  # Выключаем состояние
+@dp.message_handler(state=ClientRequests.call_entry_question)
+async def get_person(message: types.Message, state: FSMContext):
+    message_entry = message.text
 
-        elif message_entry == 'ДА':
-            # await ClientRequests.call_entry_finish.set()  # Устанавливаем состояние
-            await bot.send_message(message.from_id, 'Выполняется запрос, ожидайте', reply_markup=kb_client)
-            result_call_entry = entry_home.entry_home(person_id, address_mess, phone_mess, reason_mess)
-            logging.info(f' result_call_entry: {result_call_entry}')
-            if result_call_entry['error_code'] == 6:
+    if message_entry == 'вернуться в меню':
+        await ClientRequests.main_menu.set()  # Устанавливаем состояние
+        await message.reply('выберите раздел', reply_markup=kb_client)
+        await state.finish()  # Выключаем состояние
 
-                await ClientRequests.main_menu.set()  # Устанавливаем состояние
-                await bot.send_message(message.from_id, 'У вас уже есть необслуженная запись', reply_markup=kb_client)
-                await state.finish()  # Выключаем состояние
-
-            else:
-                HomeVisit_id = result_call_entry['data']['HomeVisit_id']
-                await ClientRequests.main_menu.set()  # Устанавливаем состояние
-                now = datetime.datetime.now()
-                HomeVisit_setDT = now.strftime("%d.%m.%Y %H:%M")
-                await bot.send_message(message.from_id,
-                                       f'Вы успешно записаны, дата записи: {HomeVisit_setDT}\n')
-                await bot.send_message(message.chat.id, f" идентификатор: `{HomeVisit_id}`", parse_mode="Markdown")
-                await state.finish()  # Выключаем состояние
-
-            # wait state.finish()  # Выключаем состояние
-
-        elif message_entry == 'НЕТ':
+    elif message_entry == 'ДА':
+        # await ClientRequests.call_entry_finish.set()  # Устанавливаем состояние
+        await bot.send_message(message.from_id, 'Выполняется запрос, ожидайте', reply_markup=kb_client)
+        result_call_entry = entry_home.entry_home(person_id, address_mess, phone_mess, reason_mess)
+        logging.info(f' result_call_entry: {result_call_entry}')
+        if result_call_entry['error_code'] == 6:
 
             await ClientRequests.main_menu.set()  # Устанавливаем состояние
-            await bot.send_message(message.from_id, 'выберите раздел', reply_markup=kb_client)
+            await bot.send_message(message.from_id, 'У вас уже есть необслуженная запись', reply_markup=kb_client)
             await state.finish()  # Выключаем состояние
-
-        elif message_entry != 'ДА' or message_entry != 'НЕТ' or message_entry != 'вернуться в меню':
-            await message.reply('Повторите ввод, ДА или НЕТ нажанием на кнопки или словами')
 
         else:
-            await message.reply('Повторите ввод, ДА или НЕТ нажанием на кнопки или словами')
+            HomeVisit_id = result_call_entry['data']['HomeVisit_id']
+            await ClientRequests.main_menu.set()  # Устанавливаем состояние
+            now = datetime.datetime.now()
+            HomeVisit_setDT = now.strftime("%d.%m.%Y %H:%M")
+            await bot.send_message(message.from_id,
+                                   f'Вы успешно записаны, дата записи: {HomeVisit_setDT}\n')
+            await bot.send_message(message.chat.id, f" идентификатор: `{HomeVisit_id}`", parse_mode="Markdown")
+            await state.finish()  # Выключаем состояние
+
+        # wait state.finish()  # Выключаем состояние
+
+    elif message_entry == 'НЕТ':
+
+        await ClientRequests.main_menu.set()  # Устанавливаем состояние
+        await bot.send_message(message.from_id, 'выберите раздел', reply_markup=kb_client)
+        await state.finish()  # Выключаем состояние
+
+    elif message_entry != 'ДА' or message_entry != 'НЕТ' or message_entry != 'вернуться в меню':
+        await message.reply('Повторите ввод, ДА или НЕТ нажанием на кнопки или словами')
+
+    else:
+        await message.reply('Повторите ввод, ДА или НЕТ нажанием на кнопки или словами')
 
 
 @dp.message_handler(commands=['entry'], state=None)

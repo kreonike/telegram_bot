@@ -15,6 +15,7 @@ import search_spec_doctor
 import search_time
 import search_time2
 import time_delete
+import home_delete
 from aiogram import Bot, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import Dispatcher
@@ -23,7 +24,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.utils import executor
 from config import bot_token
-from keyboards.client_kb import kb_client, spec_client, pol_client, menu_client, ident_client
+from keyboards.client_kb import kb_client, spec_client, pol_client, menu_client, ident_client, choise_client
 
 # from PIL import Image
 
@@ -81,6 +82,9 @@ class ClientRequests(StatesGroup):
     call_address = State()
     call_entry_question = State()
     call_entry_finish = State()
+    cancel_doctor = State()
+    cancel_home = State()
+    question_cancel_doctor = State()
 
 
 def check_timetabletype(data_time_final):
@@ -117,25 +121,25 @@ async def help_command(message: types.Message):
 @dp.message_handler(text='АДРЕСА И ТЕЛЕФОНЫ', state=None)
 async def info_command(message: types.Message):
     await message.answer(
-        f' CТАЦИОНАР ГКБ12\n'
+        f' *CТАЦИОНАР ГКБ12*\n'
         f' Нижний Новгородул, ул. Павла Мочалова,8\n'
         f' Секретарь: 273-00-62\n'
         f'\n'
-        f' ПОЛИКЛИНИКА №1\n'
+        f' *ПОЛИКЛИНИКА №1*\n'
         f' Нижний Новгород, ул.Васенко,11\n'
         f' регистратура: 280-85-95\n'
         f'\n'
-        f' ПОЛИКЛИНИКА №2\n'
+        f' *ПОЛИКЛИНИКА №2*\n'
         f' Нижний Новгород, ул.Свободы, 3\n'
         f' регистратура: 273-03-00\n'
         f'\n'
-        f' ПОЛИКЛИНИКА №3\n'
+        f' *ПОЛИКЛИНИКА №3*\n'
         f' Нижний Новгород, ул.Циолковского,9\n'
         f' Регистратура 225-01-87\n'
         f'\n'
-        f' ПОЛИКЛИНИКА №4\n'
+        f' *ПОЛИКЛИНИКА №4*\n'
         f' Светлоярская улица, 38А'
-        f' регистратура: 271-89-72', reply_markup=kb_client)
+        f' регистратура: 271-89-72', reply_markup=kb_client, parse_mode="Markdown")
 
 
 @dp.message_handler(text='режим работы', state=None)
@@ -412,13 +416,45 @@ async def checking(message: types.Message, state: FSMContext):
                     await state.finish()  # Выключаем состояние
 
 
-@dp.message_handler(text='ОТМЕНА ЗАПИСИ', state=None)
+@dp.message_handler(text='ОТМЕНА ЗАПИСИ')
 async def cancel_command(message: types.Message):
-    await bot.send_message(message.from_id, 'Введите свой полис ОМС: ', reply_markup=menu_client)
-    await ClientRequests.cancel.set()  # Устанавливаем состояние
+    @dp.message_handler(text='ОТМЕНА ЗАПИСИ К ВРАЧУ')
+    async def spec_command(message: types.Message, state: FSMContext):
+        await bot.send_message(message.from_id, 'Введите свой полис ОМС: ', reply_markup=menu_client)
+        print('ОТМЕНА ЗАПИСИ К ВРАЧУ')
+        await ClientRequests.cancel_doctor.set()  # Устанавливаем состояние
+
+    @dp.message_handler(text='ОТМЕНА ЗАПИСИ ВЫЗОВА НА ДОМ')
+    async def spec_command(message: types.Message, state: FSMContext):
+        await bot.send_message(message.from_id, 'Введите идентификатор, полученный при вызове врача на дом: ',
+                               reply_markup=menu_client)
+        print('ОТМЕНА ЗАПИСИ ВЫЗОВА НА ДОМ')
+        await ClientRequests.cancel_home.set()  # Устанавливаем состояние
+
+    await bot.send_message(message.from_id, 'Выберите раздел: ', reply_markup=choise_client)
 
 
-@dp.message_handler(state=ClientRequests.cancel)
+@dp.message_handler(state=ClientRequests.cancel_home)
+async def cancel_command(message: types.Message, state: FSMContext):
+    mess = message.text
+    print(mess)
+    status_home_delete = home_delete.home_delete(mess)
+    logging.info(f' status_home_delete: {status_home_delete}')
+
+    if status_home_delete['error_code'] == 0:
+        await bot.send_message(message.from_id, 'Вызов на дом ОТМЕНЁН', reply_markup=menu_client)
+        await message.reply('выберите раздел', reply_markup=kb_client)
+        await state.finish()
+
+    elif status_home_delete['error_code'] == 6:
+        await bot.send_message(message.from_id, 'Неверный идентификатор', reply_markup=menu_client)
+
+
+    else:
+        print('test')
+
+
+@dp.message_handler(state=ClientRequests.cancel_doctor)
 async def checking(message: types.Message, state: FSMContext):
     await bot.send_message(message.from_id, 'Идёт поиск, подождите ', reply_markup=menu_client)
     mess = message.text
@@ -542,56 +578,6 @@ def del_entry(message_delete, entry_data):
             del_error = '6'
             print(del_error)
             return del_error
-
-
-# def search_spec_doctor(base_ecp_spec, pol):
-#     print(base_ecp_spec)
-#     ##авторизация
-#     authorization()
-#     session = authorization()
-#
-#     if base_ecp_spec == 520101000000160:
-#         print('меняем специальности')
-#         stomat = ['520101000000160', '520101000000197', '520101000000165']
-#
-#         combile_data_lpu_person_old = []
-#         data_lpu_person_list = []
-#         for i in stomat:
-#             # print(i)
-#             search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={i}&' \
-#                                 f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
-#             print(f'  (((((((((( search_lpu_person: {search_lpu_person}')
-#
-#             result_lpu_person = requests.get(search_lpu_person)
-#             # data_lpu_person_old.append(result_lpu_person.json())
-#             data_lpu_person_old_ = result_lpu_person.json()
-#             # print(data_lpu_person_old_)
-#             combile_data_lpu_person_old.append(data_lpu_person_old_)
-#         print(f' ? combile_data_lpu_person_old: {combile_data_lpu_person_old}')
-#         for member in combile_data_lpu_person_old:
-#             for n in member['data']:
-#                 data_lpu_person_list.append(n)
-#                 # print(n)
-#
-#         # print(f' data_lpu_person_old в цикле: {data_lpu_person_old}')
-#         # data_lpu_person_old = data_lpu_person_old['data']
-#         # print(f' data_lpu_person_old на выходе из цикла: {data_lpu_person_old}')
-#         # print(data_lpu_person_old['data'])
-#         data_lpu_person_old = data_lpu_person_list
-#         print(f' выход из функции data_lpu_person_old: {data_lpu_person_old}')
-#         return data_lpu_person_old
-#
-#     else:
-#
-#         search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
-#                             f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
-#
-#         result_lpu_person = requests.get(search_lpu_person)
-#         data_lpu_person_old_ = result_lpu_person.json()
-#         data_lpu_person_old = data_lpu_person_old_['data']
-#
-#         print(f' MedStaffFact_id data_lpu_person_old: {data_lpu_person_old}')
-#         return data_lpu_person_old
 
 
 def spec_check(spec, base_ecp_medspecoms_id):

@@ -267,8 +267,9 @@ async def checking(message: types.Message, state: FSMContext):
                                             f' Телефон: {phone_mess}\n'
                                             f' Причина вызова: {reason_mess}\n'
                                             f'\n'
-                                            f' Всё верно ? Отменить запись можно будет только через оператора',
-                           reply_markup=ident_client)
+                                            f' Всё верно ? Отменить запись можно будет только через оператора, '
+                                            f'если Вы записываетесь после 12:00, то вызов врача будет назначен'
+                                            f' на завтра', reply_markup=ident_client)
     await ClientRequests.call_entry_question.set()
 
 

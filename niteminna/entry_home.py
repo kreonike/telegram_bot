@@ -23,18 +23,30 @@ def entry_home(person_id, address_mess, phone_mess, reason_mess):
     # 5 вызов узкого специалиста
 
     KLStreet_id = '393790'
-    # HomeVisit_House = '14'
-    # HomeVisit_setDT = '14.11.2022 00:00'
     HomeVisitStatus_id = '1'  # назначен врач
     get_status_address = f'https://ecp.mznn.ru/api/Address?Person_id={person_id}&sess_id={session}'
     result_address = requests.get(get_status_address)
     status_address = result_address.json()
     logging.info(f' person address: {status_address}')
 
-    # KLStreet_id = status_address['data']['1']['KLStreet_id']
     HomeVisit_House = status_address['data']['1']['Address_House']
+
     now = datetime.datetime.now()
-    HomeVisit_setDT = now.strftime("%d.%m.%Y %H:%M")
+    time_entry = now.strftime("%Y-%m-%d %H:%m")
+    time_default = now.strftime('%Y-%m-%d 12:00')
+
+    if time_default < time_entry:
+        print('time_default < time_entry')
+        time_entry = now + datetime.timedelta(days=1)
+        HomeVisit_setDT = time_entry.strftime("%Y-%m-%d 08:00")
+
+    else:
+        print('time_entry > time_default')
+        HomeVisit_setDT = now.strftime("%Y-%m-%d %H:%m")
+
+    # HomeVisit_setDT = now.strftime("%d.%m.%Y %H:%M")
+
+    logging.info(f' фактическая дата записи: {HomeVisit_setDT}')
 
     status_home = f'http://ecp.mznn.ru/api/HomeVisit/HomeVisit?CallProfType_id=1&' \
                   f'Address_Address={address_mess}&KLStreet_id={KLStreet_id}&HomeVisit_House={HomeVisit_House}&HomeVisitCallType_id=1&' \

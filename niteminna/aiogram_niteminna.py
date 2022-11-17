@@ -437,7 +437,7 @@ async def cancel_command(message: types.Message):
     async def spec_command(message: types.Message, state: FSMContext):
         # await bot.send_message(message.from_id, 'Введите идентификатор, полученный при вызове врача на дом: ',
         #                        reply_markup=menu_client)
-        await message.reply('Отменить вызов врача на дом невозможно, ожитайте звонка оператора', reply_markup=kb_client)
+        await message.reply('Отменить вызов врача на дом невозможно, ожидайте звонка оператора', reply_markup=kb_client)
         await state.finish()
         # print('ОТМЕНА ЗАПИСИ ВЫЗОВА НА ДОМ')
         # await ClientRequests.cancel_home.set()  # Устанавливаем состояние

@@ -266,7 +266,9 @@ async def checking(message: types.Message, state: FSMContext):
                                             f' Адресс: {address_mess}\n'
                                             f' Телефон: {phone_mess}\n'
                                             f' Причина вызова: {reason_mess}\n'
-                                            f' Всё верно ?', reply_markup=ident_client)
+                                            f'\n'
+                                            f' Всё верно ? Отменить запись можно будет только через оператора',
+                           reply_markup=ident_client)
     await ClientRequests.call_entry_question.set()
 
 
@@ -433,10 +435,12 @@ async def cancel_command(message: types.Message):
 
     @dp.message_handler(text='ОТМЕНА ЗАПИСИ ВЫЗОВА НА ДОМ')
     async def spec_command(message: types.Message, state: FSMContext):
-        await bot.send_message(message.from_id, 'Введите идентификатор, полученный при вызове врача на дом: ',
-                               reply_markup=menu_client)
-        print('ОТМЕНА ЗАПИСИ ВЫЗОВА НА ДОМ')
-        await ClientRequests.cancel_home.set()  # Устанавливаем состояние
+        # await bot.send_message(message.from_id, 'Введите идентификатор, полученный при вызове врача на дом: ',
+        #                        reply_markup=menu_client)
+        await message.reply('Отменить вызов врача на дом невозможно, ожитайте звонка оператора', reply_markup=kb_client)
+        await state.finish()
+        # print('ОТМЕНА ЗАПИСИ ВЫЗОВА НА ДОМ')
+        # await ClientRequests.cancel_home.set()  # Устанавливаем состояние
 
     await bot.send_message(message.from_id, 'Выберите раздел: ', reply_markup=choise_client)
 

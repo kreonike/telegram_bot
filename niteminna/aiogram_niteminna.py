@@ -299,9 +299,10 @@ async def get_person(message: types.Message, state: FSMContext):
         else:
             HomeVisit_id = result_call_entry['data']['HomeVisit_id']
             await ClientRequests.main_menu.set()  # Устанавливаем состояние
-            now = datetime.datetime.now()
+            HomeVisit_setDT = result_call_entry['data']['HomeVisit_setDT']
+            # now = datetime.datetime.now()
             # HomeVisit_setDT = now.strftime("%d.%m.%Y %H:%M")
-            HomeVisit_setDT = now.strftime("%d.%m.%Y")
+            # HomeVisit_setDT = now.strftime("%d.%m.%Y")
             await bot.send_message(message.from_id,
                                    f'Вы успешно записаны, дата записи: {HomeVisit_setDT}\n')
             await bot.send_message(message.chat.id, f" идентификатор: `{HomeVisit_id}`", parse_mode="Markdown")

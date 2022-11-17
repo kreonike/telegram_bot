@@ -32,17 +32,19 @@ def entry_home(person_id, address_mess, phone_mess, reason_mess):
     HomeVisit_House = status_address['data']['1']['Address_House']
 
     now = datetime.datetime.now()
-    time_entry = now.strftime("%Y-%m-%d %H:%m")
-    time_default = now.strftime('%Y-%m-%d 12:00')
+    time_entry = now.strftime("%d.%m.%Y %H:%m")
+    time_default = now.strftime('%d.%m.%Y 12:00')
 
     if time_default < time_entry:
         print('time_default < time_entry')
         time_entry = now + datetime.timedelta(days=1)
-        HomeVisit_setDT = time_entry.strftime("%Y-%m-%d 08:00")
+        HomeVisit_setDT = time_entry.strftime("%d.%m.%Y 08:00")
+        print(f' if: HomeVisit_setDT')
 
     else:
         print('time_entry > time_default')
-        HomeVisit_setDT = now.strftime("%Y-%m-%d %H:%m")
+        HomeVisit_setDT = now.strftime("%d.%m.%Y %H:%m")
+        print(f' else: HomeVisit_setDT')
 
     # HomeVisit_setDT = now.strftime("%d.%m.%Y %H:%M")
 

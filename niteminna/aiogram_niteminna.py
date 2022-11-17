@@ -297,7 +297,8 @@ async def get_person(message: types.Message, state: FSMContext):
             HomeVisit_id = result_call_entry['data']['HomeVisit_id']
             await ClientRequests.main_menu.set()  # Устанавливаем состояние
             now = datetime.datetime.now()
-            HomeVisit_setDT = now.strftime("%d.%m.%Y %H:%M")
+            # HomeVisit_setDT = now.strftime("%d.%m.%Y %H:%M")
+            HomeVisit_setDT = now.strftime("%d.%m.%Y")
             await bot.send_message(message.from_id,
                                    f'Вы успешно записаны, дата записи: {HomeVisit_setDT}\n')
             await bot.send_message(message.chat.id, f" идентификатор: `{HomeVisit_id}`", parse_mode="Markdown")
@@ -447,7 +448,11 @@ async def cancel_command(message: types.Message, state: FSMContext):
     status_home_delete = home_delete.home_delete(mess)
     logging.info(f' status_home_delete: {status_home_delete}')
 
-    if status_home_delete['error_code'] == 0:
+    if mess == 'вернуться в меню':
+        await message.reply('выберите раздел', reply_markup=kb_client)
+        await state.finish()
+
+    elif status_home_delete['error_code'] == 0:
         await bot.send_message(message.from_id, 'Вызов на дом ОТМЕНЁН', reply_markup=menu_client)
         await message.reply('выберите раздел', reply_markup=kb_client)
         await state.finish()

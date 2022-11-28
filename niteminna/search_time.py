@@ -25,9 +25,11 @@ def search_time(MedStaffFact_id, data_date_dict):
 
         result_MedStaffFact_id = requests.get(search_time)
         data_time_dict = result_MedStaffFact_id.json()
-        print(data_time_dict)
+        # print(data_time_dict)
+        logging.info(f' data_time_dict: {data_time_dict}')
         for item in data_time_dict['data']:
             TimeTableGraf_id = item['TimeTableGraf_id']
+            # logging.info(f' TimeTableGraf_id: {TimeTableGraf_id}')
             search_type = f'http://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafById?' \
                           f'TimeTableGraf_id={TimeTableGraf_id}&sess_id={session}'
             result_type = requests.get(search_type)
@@ -35,8 +37,9 @@ def search_time(MedStaffFact_id, data_date_dict):
             r = data_type_dict
             # print(f' r = {r}')
             for j in r['data']:
-                if j['TimeTableType_id'] == '10' or j['TimeTableType_id'] == '1' or j['TimeTableType_id'] == '11':
+                if j['TimeTableType_id'] == '1' or j['TimeTableType_id'] == '10' or j['TimeTableType_id'] == '11':
                     data_time_list.append(j)
                 else:
                     pass
+    logging.info(f' data_time_list: {data_time_list}')
     return data_time_list

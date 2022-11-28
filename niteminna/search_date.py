@@ -17,12 +17,14 @@ def search_date(MedStaffFact_id):
     now = datetime.datetime.now()
 
     tomorrow = now + datetime.timedelta(days=1)
-    print(f' завтра: {tomorrow}')
+    # print(f' завтра: {tomorrow}')
     today = now.strftime("%Y-%m-%d")
     tomorrow = tomorrow.strftime("%Y-%m-%d")
+    logging.info(f' tomorrow: {tomorrow}')
 
     result = now + datetime.timedelta(days=4)
     TimeTableGraf_end = result.date()
+    #logging.info(f' TimeTableGraf_end: {TimeTableGraf_end}')
 
     search_date = (f' https://ecp.mznn.ru/api/TimeTableGraf/TimeTableGrafFreeDate?MedStaffFact_id={MedStaffFact_id}'
                    f'&TimeTableGraf_beg={tomorrow}&TimeTableGraf_end={TimeTableGraf_end}&sess_id={session}')

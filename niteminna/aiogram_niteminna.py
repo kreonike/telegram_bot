@@ -670,7 +670,7 @@ async def get_spec(message: types.Message, state: FSMContext):
             print(data_lpu_person_old)
             for key in data_lpu_person_old:
                 # print(key)
-                if key['RecType_id'] == '1' and key['Post_id'] != '520101000000049' and key[
+                if key['Post_id'] != '520101000000049' and key[
                     'Person_id'] != '5656886' and \
                         key['Person_id'] != '7611212' and key['Person_id'] != '10168043':
                     data_lpu_person.append(key)
@@ -700,8 +700,10 @@ async def get_spec(message: types.Message, state: FSMContext):
                 spec_dict_final = {}
                 print(f't0: {spec_dict_final}')
                 for i in data_lpu_person:
-                    name = i['PersonSurName_SurName']
-                    spec_dict_final[name] = i['MedStaffFact_id']
+                    if i['LpuSection_id'] == '520101000008790' or i['LpuSection_id'] == '520101000007860' \
+                            or i['LpuSection_id'] == '520101000013021' or i['LpuSection_id'] == '520101000008863':
+                        name = i['PersonSurName_SurName']
+                        spec_dict_final[name] = i['MedStaffFact_id']
                 print(f' ? post_id: {post_id}')
                 print(f' это dict: {spec_dict_final}')
 

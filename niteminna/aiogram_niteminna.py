@@ -672,7 +672,12 @@ async def get_spec(message: types.Message, state: FSMContext):
                 # print(key)
                 if key['Post_id'] != '520101000000049' and key[
                     'Person_id'] != '5656886' and \
-                        key['Person_id'] != '7611212' and key['Person_id'] != '10168043':
+                        key['Person_id'] != '7611212' and key['Person_id'] != '10168043' \
+                        and key['Person_id'] != '5570722' and key['Person_id'] != '7409255' \
+                        and key['Person_id'] != '7511183' and key['Person_id'] != '9827128' \
+                        and key['Person_id'] != '9901773' and key['Person_id'] != '9931987' \
+                        and key['Person_id'] != '10362016' and key['Person_id'] != '7437558' \
+                        and key['Person_id'] != '5656924' and key['Person_id'] != '7193169':
                     data_lpu_person.append(key)
                     # print(key)
 
@@ -700,10 +705,15 @@ async def get_spec(message: types.Message, state: FSMContext):
                 spec_dict_final = {}
                 print(f't0: {spec_dict_final}')
                 for i in data_lpu_person:
-                    if i['LpuSection_id'] == '520101000008790' or i['LpuSection_id'] == '520101000007860' \
-                            or i['LpuSection_id'] == '520101000013021' or i['LpuSection_id'] == '520101000008863':
-                        name = i['PersonSurName_SurName']
-                        spec_dict_final[name] = i['MedStaffFact_id']
+                    # if i['LpuSection_id'] == '520101000008790' or i['LpuSection_id'] == '520101000007860' \
+                    #         or i['LpuSection_id'] == '520101000013021' or i['LpuSection_id'] == '520101000008863' \
+                    #         or i['LpuSection_id'] == '520101000012410' or i['LpuSection_id'] == '520101000008792' \
+                    #         or i['LpuSection_id'] == '520101000008787' or i['LpuSection_id'] == '520101000008786' \
+                    #         or i['LpuSection_id'] == '520101000008793' or i['LpuSection_id'] == '520101000008789' \
+                    #         or i['LpuSection_id'] == '520101000012407' or i['LpuSection_id'] == '520101000008800':
+                    #     520101000000591
+                    name = i['PersonSurName_SurName']
+                    spec_dict_final[name] = i['MedStaffFact_id']
                 print(f' ? post_id: {post_id}')
                 print(f' это dict: {spec_dict_final}')
 

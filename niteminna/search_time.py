@@ -37,7 +37,8 @@ def search_time(MedStaffFact_id, data_date_dict):
             r = data_type_dict
             # print(f' r = {r}')
             for j in r['data']:
-                if j['TimeTableType_id'] == '1' or j['TimeTableType_id'] == '10' or j['TimeTableType_id'] == '11':
+                if j['TimeTableType_id'] == '1' or j['TimeTableType_id'] == '4' or j['TimeTableType_id'] == '10' or j[
+                    'TimeTableType_id'] == '11':
                     data_time_list.append(j)
                 else:
                     pass

@@ -2,8 +2,9 @@ import logging
 from config import bot_token, login_ecp, password_ecp
 import requests
 import authorization
+import base_ecp
 
-
+lpu_id = 'Lpu_id=2762'
 def search_doctor(d_final):
     fast_id = base_ecp.medspecoms_id.values()
     print(f' передано значение: {d_final}')

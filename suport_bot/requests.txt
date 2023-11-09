@@ -1,0 +1,7 @@
+data: 2023-11-07, time: 21:45:13, user_id: 120334532, cabinet: 7234, ticket: #91, text: новый бот, новый дом, новая работа, новые сиськи
+data: 2023-11-07, time: 22:09:52, user_id: 120334532, cabinet: 70, ticket: #92, text: вапвап
+data: 2023-11-07, time: 22:09:52, user_id: 120334532, cabinet: 70, ticket: #92, text: вапвап
+data: 2023-11-07, time: 22:10:37, user_id: 120334532, cabinet: 67, ticket: #93, text: dfgh
+data: 2023-11-08, time: 21:20:20, user_id: 120334532, cabinet: 777, ticket: #95, text: dfghdfghdfgh
+data: 2023-11-09, time: 04:27:39, user_id: 120334532, cabinet: 345, ticket: #96, text: sdfg
+data: 2023-11-09, time: 21:47:23, user_id: 120334532, cabinet: 13, ticket: #97, text: test

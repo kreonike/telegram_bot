@@ -2,7 +2,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemo
 
 info = KeyboardButton('АДРЕСА И ТЕЛЕФОНЫ')
 
-call = KeyboardButton('ВЫЗОВ ВРАЧА НА ДОМ')
+call = KeyboardButton('ВРЕМЕННО НЕДОСТУПЕНО')
 spec = KeyboardButton('ЗАПИСЬ К ВРАЧУ')
 cancel = KeyboardButton('ОТМЕНА ЗАПИСИ')
 cancel_doctor = KeyboardButton('ОТМЕНА ЗАПИСИ К ВРАЧУ')

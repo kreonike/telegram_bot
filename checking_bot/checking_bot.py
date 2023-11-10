@@ -119,7 +119,7 @@ def serch_pol(callback):
     base_ecp_medspecoms_id = base_ecp.medspecoms_id
     logging.info(f' специальности: {base_ecp_medspecoms_id}')
 
-    spec = ['терапевт', 'офтальмолог', 'стоматолог', 'отоларинголог', 'хирург', 'воп']
+    spec = ['терапевт', 'офтальмолог', 'стоматолог', 'отоларинголог', 'хирург', 'воп', 'акушер-гинеколог']
     for spec_ in spec:
         print('spec_', spec_)
 
@@ -175,6 +175,8 @@ def serch_pol(callback):
         elif spec_ == 'воп':
             spec_comparisons = 'должно быть >= 280'
 
+        elif spec_ == 'акушер-гинеколог':
+            spec_comparisons = 'должно быть >= 260'
 
         if not total_dict_base:
             logging.info(f' список пуст')

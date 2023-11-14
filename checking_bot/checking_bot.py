@@ -20,7 +20,7 @@ curr_time = time.strftime("%H:%M:%S", time.localtime())
 
 bot = telebot.TeleBot(bot_token)
 
-version = '14.31 pre release'
+version = '14.32 pre release'
 creater = '@rapot'
 
 # id pol

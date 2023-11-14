@@ -20,7 +20,7 @@ curr_time = time.strftime("%H:%M:%S", time.localtime())
 
 bot = telebot.TeleBot(bot_token)
 
-version = '14.30 beta'
+version = '14.31 pre release'
 creater = '@rapot'
 
 # id pol
@@ -181,12 +181,30 @@ def serch_pol(callback):
         if not total_dict_base:
             logging.info(f' список пуст')
         else:
-             bot.send_message(callback.from_user.id, f' {spec_} {spec_comparisons}\n'
-                                                     f'{total_dict_base}')
+
+            # keys = list(total_dict_base.keys())
+            # items = list(total_dict_base.values())
+            # print(f'{keys[0]}: {items[0]}')
+            print('total_dict_base!!!!!!!!!', total_dict_base)
+
+            for i in total_dict_base:
+                print(f"{i} = {total_dict_base[i]}")
+
+            strings = []
+            for key, item in total_dict_base.items():
+                strings.append("{}: {}".format(key.capitalize(), item))
+            result = '\n'.join(strings)
+            print(result)
+
+            bot.send_message(callback.from_user.id, f' {spec_} {spec_comparisons}\n'
+                                                    f'\n'
+                                                        #f'{i} = {total_dict_base[i]}')
+                                                    f'{result}')
 
     bot.send_message(callback.from_user.id, f'выберите раздел', reply_markup=kb)
 
 
 
 
-bot.infinity_polling(timeout=10, long_polling_timeout=5)
+#bot.infinity_polling(timeout=10, long_polling_timeout=5)
+bot.polling(none_stop=True, timeout=123)

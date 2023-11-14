@@ -196,7 +196,7 @@ def serch_pol(callback):
             result = '\n'.join(strings)
             print(result)
 
-            bot.send_message(callback.from_user.id, f' {spec_} {spec_comparisons}\n'
+            bot.send_message(callback.from_user.id, f' {spec_}: {spec_comparisons}\n'
                                                     f'\n'
                                                         #f'{i} = {total_dict_base[i]}')
                                                     f'{result}')

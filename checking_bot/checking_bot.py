@@ -9,11 +9,10 @@ import search_time
 # from kb.kb import kb_spec
 # import spec_list
 import search_busy_date
-
-logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
-
 import time
 from datetime import date
+
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 current_date = date.today()
 curr_time = time.strftime("%H:%M:%S", time.localtime())
@@ -103,7 +102,7 @@ def serch_pol(callback):
         logging.info(f' врачи в пол: {pol}')
 
     print(choise_pol)
-    #logging.info(f' список врачей в пол: {pol}')
+    # logging.info(f' список врачей в пол: {pol}')
 
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(text='поликлиника 1', callback_data='pol1')
@@ -114,6 +113,7 @@ def serch_pol(callback):
     kb.add(btn1, btn2).add(btn3, btn4).row(btn5)
 
     bot.send_message(callback.from_user.id, f' ожидайте выполнения скрипта ~2min')
+
     logging.info(f' мы в пол: {pol}')
 
     base_ecp_medspecoms_id = base_ecp.medspecoms_id
@@ -149,11 +149,9 @@ def serch_pol(callback):
             print(f' data_busytime = {data_busytime}')
             # print(data_time_final.values())
 
-
             if data_freetime + data_busytime != 0:
                 total_dict_base[name] = data_freetime + data_busytime
                 print('total_dict_base', total_dict_base)
-
 
         spec_comparisons = '0'
         if spec_ == 'терапевт':
@@ -198,13 +196,11 @@ def serch_pol(callback):
 
             bot.send_message(callback.from_user.id, f' {spec_}: {spec_comparisons}\n'
                                                     f'\n'
-                                                        #f'{i} = {total_dict_base[i]}')
+            # f'{i} = {total_dict_base[i]}')
                                                     f'{result}')
 
     bot.send_message(callback.from_user.id, f'выберите раздел', reply_markup=kb)
 
 
-
-
-#bot.infinity_polling(timeout=10, long_polling_timeout=5)
+# bot.infinity_polling(timeout=10, long_polling_timeout=5)
 bot.polling(none_stop=True, timeout=123)

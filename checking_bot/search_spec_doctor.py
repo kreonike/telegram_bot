@@ -13,7 +13,7 @@ def search_spec_doctor(base_ecp_spec, pol):
 
     if base_ecp_spec == 520101000000160:
         print('меняем специальности')
-        stomat = ['520101000000160', '520101000000197', '520101000000165']
+        stomat = ['520101000000160', '520101000000197', '520101000000165', '520101000000166']
 
         combile_data_lpu_person_old = []
         data_lpu_person_list = []

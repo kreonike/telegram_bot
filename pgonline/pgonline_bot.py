@@ -7,6 +7,7 @@ from telebot import types
 import logging
 import time
 from datetime import date
+#from telegram.constants import ParseMode
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
@@ -32,8 +33,12 @@ def start(message):
     # btn3 = types.InlineKeyboardButton(text='о нас', callback_data='about')
     # kb.add(btn2, btn3, btn1)
     first_name = message.from_user.first_name
-    bot.send_message(message.chat.id, f' Привет {first_name}\n'
-                                      f'выберите интересующий Вас раздел')
+    bot.send_message(message.chat.id, f' Привет, {first_name}\n'
+                                      f'выберите интересующий Вас раздел ')
+
+def menu(message):
+    bot.send_message(message.chat.id, f'чтобы задать новый вопрос нажмите "задать новый вопрос"')
+
 
 @bot.message_handler(commands=['add_question'])
 def add_question(message):
@@ -42,107 +47,100 @@ def add_question(message):
     user_id = message.from_user.id
 
     print(user_id)
+    print(message)
+    question = bot.send_message(message.from_user.id, 'запишите свой вопрос: ')
+    bot.register_next_step_handler(question, choise_)
+
+def choise_(message):
 
     # kb = types.InlineKeyboardMarkup()
-    # btn4 = types.InlineKeyboardButton(text="начать чат", callback_data='start_chat')
-    #
+    # btn4 = types.InlineKeyboardButton(text="начать чат", callback_data='start_question')
     # btn5 = types.InlineKeyboardButton(text='завершить', callback_data='close_question')
     # kb.add(btn4, btn5)
 
+    text = message.text
+    user_id = message.from_user.id
     bot.send_message(message.chat.id, 'Ваш вопрос успешно зарегистрирован')
-    bot.send_message(group_id, f' дата: {current_date}, время: {curr_time}\n'
-                               f'новый вопрос от user_id: {user_id},\n'
-                               f' \n'
-                               f'{text}')
-    bot.register_next_step_handler(message, check)
+    bot.send_message(group_id, f'дата: {current_date}, время: {curr_time}\n'
+                                      f'новый вопрос от пользователя: `{user_id}`\n'
+                                      f' \n'
+                                      f'{text}', parse_mode="MARKDOWN")
+
+    bot.register_next_step_handler(message, user_chat_id)
 
 
-def add_chat(message):
+@bot.message_handler(commands=['user_chat'])
+def user_chat_id(message):
+    print(message)
+    print('а вот и юзер ид: ', message.from_user.id)
+    bot.send_message(group_id, 'Введите user_id')
+    bot.register_next_step_handler(message, chat_user_text)
+
+
+def chat_user_text(message):
     message = message.text
-    print('add_chat', message)
+    print(message)
+    bot.send_message(group_id, f' вы ввели: {message}')
+
+    # what = bot.send_message(group_id, 'что хотите написать')
+    # print(who, what)
+
+    #@bot.message_handler(content_types=['text'])
+# def choise_(message):
+#     # message = message.text
+#     print('sdfsdf')
+#     print(message)
+    # if message == 'start_chat':
+    #
+    #     print('start_chat')
+    #     bot.send_message(group_id, 'напишите ответ пользователю')
+    #
+    # elif message == 'close_question':
+    #     print('close')
 
 
-@bot.message_handler(content_types=['text'])
-def check(message):
-    message = message.text
-    if message == 'add':
-        bot.send_message(message.from_user.id, 'запишите свой вопрос: ')
-        bot.register_next_step_handler(message, add_question)
-        print('тут')
-
-    elif message == 'start_chat':
-        bot.send_message(group_id, 'запишите свой ответ:')
-
-        bot.register_next_step_handler(message, add_chat)
-
-        @bot.message_handler(content_types=['text'])
-        def start_chat(message):
-            print(message)
 
 
-# @bot.message_handler(commands=['open'])
-# def open_(message):
-#     # tiket counter
-#     f = open('counter.txt', 'r')
-#     tiket = int(f.readline())
+# @bot.callback_query_handler(func=lambda callback: callback.data)
+# def choise_(callback):
+#     if callback.data == 'start_question':
 #
-#     f.close()
+#         print('start_question', callback.data)
+#         bot.send_message(group_id, 'напишите ответ пользователю')
 #
-#     f_stat = open('requests.txt', 'r')
-#     # считываем все строки
-#     lines = f_stat.readlines()
-#     print(tiket)
-#     # итерация по строкам
-#     bot.send_message(group_id, f' Всего запросов: {tiket}\n'
-#                                f'список запросов: ')
-#     for line in lines:
-#         print(line.strip())
-#
-#         bot.send_message(group_id, line.strip())
-#     f_stat.close()
+#     elif callback.data == 'close_question':
+#         print('close')
 
 
-# @bot.message_handler(commands=['stat'])
-# def stat(message):
-#     bot.send_message(group_id, f' тикетов за всё время: \n'
-#                                f'список запросов за всё время: ')
-#
-#
-# @bot.message_handler(commands=['close'])
-# def close(message):
-#     close_tiket = bot.send_message(group_id, f' Введите номер тикета, который хотите закрыть: ')
-#     print(close_tiket)
-#     bot.register_next_step_handler(close_tiket, delete_tickets)
-#
-# import re
-# def delete_tickets(message):
+
+# @bot.message_handler(content_types=['text'])
+# def question(message):
 #     message = message.text
-#
-#     with open('requests.txt') as requests:
-#         for line in requests:
-#             if message in line:
-#                 logging.info(f' это искомая строка: {line}')
-#                 send_user = line.split()
-#                 user_id = send_user[5]
-#                 user_name_new = user_id[:-1]
-#                 logging.info(f' юзер, которому напишем: {user_name_new}')
-#
-#                 # отправка сообщения юзеру о закрытии тикета
-#                 bot.send_message(user_name_new, 'Ваш запрос выполнен')
-#
-#                 bot.send_message(group_id, f' тикет: {line} будет удалён')
-#
-#     str = message
-#     pattern = re.compile(re.escape(str))
-#     with open('requests.txt', 'r+') as f:
-#         lines = f.readlines()
-#         f.seek(0)
-#         for line in lines:
-#             result = pattern.search(line)
-#             if result is None:
-#                 f.write(line)
-#             f.truncate()
+#     print(message)
+        # print('!!!!!')
+        # answer = bot.send_message(group_id, 'напишите ответ пользователю')
+        # print(answer)
 
-# bot.polling(none_stop=True)
-# bot.infinity_polling(timeout=10, long_polling_timeout = 5)
+        # answer = bot.send_message(group_id, 'напишите ответ пользователю')
+        # support_chat(answer)
+        # # print(answer)
+        # # bot.register_next_step_handler(answer, user_chat)
+
+
+# def support_chat(message):
+#     print(message)
+#     print('test')
+#     t= bot.send_message(group_id, 'напишите ответ пользователю')
+#     print('это Т', t)
+
+
+
+
+
+# @bot.message_handler(content_types=['text'])
+# def user_chat(message):
+#     print(message)
+#     mess = message.text
+#     print(mess)
+
 bot.polling(none_stop=True, timeout=123)

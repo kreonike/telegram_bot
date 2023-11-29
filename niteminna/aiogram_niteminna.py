@@ -34,7 +34,7 @@ logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 spec_dict_final = {}
 MedStaffFact_id = {}
-MedStaffFact_id = []
+#MedStaffFact_id = []
 data_time_final = {}
 
 version = '1.8 release'

@@ -19,7 +19,7 @@ curr_time = time.strftime("%H:%M:%S", time.localtime())
 
 bot = telebot.TeleBot(bot_token)
 
-version = '14.32 pre release'
+version = '15.42 release'
 creater = '@rapot'
 
 # id pol
@@ -131,6 +131,10 @@ def serch_pol(callback):
         logging.info(f' врачи в пол: {pol}: {data_lpu_person}')
 
         total_dict_base = {}
+        #timetable_count = 0
+
+
+
         for i in data_lpu_person:
             data_date_dict = {}
             name = i['PersonSurName_SurName']
@@ -145,12 +149,22 @@ def serch_pol(callback):
 
             data_freetime = search_time.search_time(MedStaffFact_id, data_date_dict)
             print(f' data_time_final = {name} + {data_freetime}')
-            data_busytime = search_busy_date.search_busy_date(MedStaffFact_id)
+            data_busytime, timetable_count = search_busy_date.search_busy_date(MedStaffFact_id)
+            print(f' timetable_count = {timetable_count}')
             print(f' data_busytime = {data_busytime}')
             # print(data_time_final.values())
+            timetable_count_free = i['TimetableGraf_Count']
+            print(timetable_count_free)
+
+            total_timetable_type1 = int(timetable_count) + int(timetable_count_free)
+            print('total_timetable_type1', total_timetable_type1)
+            if total_timetable_type1 != 0:
+                percentage_total_timetable_type1 = total_timetable_type1 / (data_freetime + data_busytime) * 100
+                r_timetable_type1 = round(percentage_total_timetable_type1, 2)
 
             if data_freetime + data_busytime != 0:
-                total_dict_base[name] = data_freetime + data_busytime
+                total_dict_base[name] = data_freetime + data_busytime, r_timetable_type1
+
                 print('total_dict_base', total_dict_base)
 
         spec_comparisons = '0'
@@ -185,19 +199,31 @@ def serch_pol(callback):
             # print(f'{keys[0]}: {items[0]}')
             print('total_dict_base!!!!!!!!!', total_dict_base)
 
-            for i in total_dict_base:
-                print(f"{i} = {total_dict_base[i]}")
+            # for i in total_dict_base:
+            #     print(f"{i} = {total_dict_base[i]}")
 
             strings = []
             for key, item in total_dict_base.items():
                 strings.append("{}: {}".format(key.capitalize(), item))
             result = '\n'.join(strings)
             print(result)
+            symbols_to_remove = "("
+            symbols_to_remove1 = ","
+            symbols_to_remove2 = ")"
 
-            bot.send_message(callback.from_user.id, f' {spec_}: {spec_comparisons}\n'
+            for symbol in symbols_to_remove:
+                result = result.replace(symbol, "")
+                for i in symbols_to_remove1:
+                    result = result.replace(i, ", ")
+                    for q in symbols_to_remove2:
+                        result = result.replace(q, "%")
+
+            print(result)
+
+            bot.send_message(callback.from_user.id, f' {spec_}:\n'
                                                     f'\n'
-            # f'{i} = {total_dict_base[i]}')
                                                     f'{result}')
+
 
     bot.send_message(callback.from_user.id, f'выберите раздел', reply_markup=kb)
 

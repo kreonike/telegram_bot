@@ -34,6 +34,8 @@ def search_time(MedStaffFact_id, data_date_dict):
 
     print(count)
 
+
+
     # for item in data_time_dict['data']:
     #     TimeTableGraf_id = item['TimeTableGraf_id']
     #     # logging.info(f' TimeTableGraf_id: {TimeTableGraf_id}')

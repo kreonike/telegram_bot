@@ -19,7 +19,7 @@ def search_spec_doctor(base_ecp_spec, pol):
         data_lpu_person_list = []
         for i in stomat:
             search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={i}&' \
-                                f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
+                                f'{lpu_id}&LpuBuilding_id={pol}&TimeTableType_id=1&sess_id={session}'
             print(f'  (((((((((( search_lpu_person: {search_lpu_person}')
 
             result_lpu_person = requests.get(search_lpu_person)
@@ -41,7 +41,7 @@ def search_spec_doctor(base_ecp_spec, pol):
     elif base_ecp_spec == 520101000000028 and pol == '520101000000589':
 
         search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
-                            f'{lpu_id}&LpuSection_id=520101000008790&LpuBuilding_id={pol}&sess_id={session}'
+                            f'{lpu_id}&LpuSection_id=520101000008790&LpuBuilding_id={pol}&TimeTableType_id=1&sess_id={session}'
 
         result_lpu_person = requests.get(search_lpu_person)
         data_lpu_person_old_ = result_lpu_person.json()
@@ -53,7 +53,7 @@ def search_spec_doctor(base_ecp_spec, pol):
     elif base_ecp_spec == 520101000000017 and pol == '520101000000589':
 
         search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
-                            f'{lpu_id}&LpuSection_id=520101000008800&LpuBuilding_id={pol}&sess_id={session}'
+                            f'{lpu_id}&LpuSection_id=520101000008800&LpuBuilding_id={pol}&TimeTableType_id=1&sess_id={session}'
 
         result_lpu_person = requests.get(search_lpu_person)
         data_lpu_person_old_ = result_lpu_person.json()
@@ -66,7 +66,7 @@ def search_spec_doctor(base_ecp_spec, pol):
     elif base_ecp_spec == 520101000000028 and pol == '520101000000591':
 
         search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
-                            f'{lpu_id}&LpuSection_id=520101000007860&LpuBuilding_id={pol}&sess_id={session}'
+                            f'{lpu_id}&LpuSection_id=520101000007860&LpuBuilding_id={pol}&TimeTableType_id=1&sess_id={session}'
 
         result_lpu_person = requests.get(search_lpu_person)
         data_lpu_person_old_ = result_lpu_person.json()
@@ -78,7 +78,7 @@ def search_spec_doctor(base_ecp_spec, pol):
     elif base_ecp_spec == 520101000000017 and pol == '520101000000591':
 
         search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
-                            f'{lpu_id}&LpuSection_id=520101000007858&LpuBuilding_id=520101000000693&sess_id={session}'
+                            f'{lpu_id}&LpuSection_id=520101000007858&LpuBuilding_id=520101000000693&TimeTableType_id=1&sess_id={session}'
 
         result_lpu_person = requests.get(search_lpu_person)
         data_lpu_person_old_ = result_lpu_person.json()
@@ -91,7 +91,7 @@ def search_spec_doctor(base_ecp_spec, pol):
     elif base_ecp_spec == 520101000000028 and pol == '520101000001382':
 
         search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
-                            f'{lpu_id}&LpuSection_id=520101000013021&LpuBuilding_id={pol}&sess_id={session}'
+                            f'{lpu_id}&LpuSection_id=520101000013021&LpuBuilding_id={pol}&TimeTableType_id=1&sess_id={session}'
 
         result_lpu_person = requests.get(search_lpu_person)
         data_lpu_person_old_ = result_lpu_person.json()
@@ -104,7 +104,7 @@ def search_spec_doctor(base_ecp_spec, pol):
     elif base_ecp_spec == 520101000000028 and pol == '520101000000181':
 
         search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
-                            f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
+                            f'{lpu_id}&LpuBuilding_id={pol}&TimeTableType_id=1&sess_id={session}'
 
         result_lpu_person = requests.get(search_lpu_person)
         data_lpu_person_old_ = result_lpu_person.json()
@@ -117,7 +117,7 @@ def search_spec_doctor(base_ecp_spec, pol):
     elif base_ecp_spec == 520101000000017 and pol == '520101000000181':
 
         search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
-                            f'{lpu_id}&LpuSection_id=520101000008800&LpuBuilding_id={pol}&sess_id={session}'
+                            f'{lpu_id}&LpuSection_id=520101000008800&LpuBuilding_id={pol}&TimeTableType_id=1&sess_id={session}'
 
         result_lpu_person = requests.get(search_lpu_person)
         data_lpu_person_old_ = result_lpu_person.json()
@@ -129,7 +129,7 @@ def search_spec_doctor(base_ecp_spec, pol):
 
     else:
         search_lpu_person = f'http://ecp.mznn.ru/api/MedStaffFact/MedStaffFactByMO?MedSpecOms_id={base_ecp_spec}&' \
-                            f'{lpu_id}&LpuBuilding_id={pol}&sess_id={session}'
+                            f'{lpu_id}&LpuBuilding_id={pol}&TimeTableType_id=1&sess_id={session}'
 
         result_lpu_person = requests.get(search_lpu_person)
         data_lpu_person_old_ = result_lpu_person.json()

@@ -1,16 +1,18 @@
+import logging
+import time
+from datetime import date
+
 import telebot
 from telebot import types
-import logging
-from config import bot_token
-import search_spec_doctor
+
 import base_ecp
-import search_date
-import search_time
 # from kb.kb import kb_spec
 # import spec_list
 import search_busy_date
-import time
-from datetime import date
+import search_date
+import search_spec_doctor
+import search_time
+from config import bot_token
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
@@ -127,45 +129,50 @@ def serch_pol(callback):
         base_ecp_spec = base_ecp.medspecoms_id[spec_]
         logging.info(f' запрошена специальность: {base_ecp_spec}')
 
+        # поиск всех сотрудников с конкретной специальностью (data_lpu_person словать всех найденных сотрудников)
         data_lpu_person = search_spec_doctor.search_spec_doctor(base_ecp_spec, pol)
         logging.info(f' врачи в пол: {pol}: {data_lpu_person}')
 
+        #словарь total_dict_base = распаковка data_lpu_person в имя + MedStaffFact_id
         total_dict_base = {}
         #timetable_count = 0
 
 
+        try:
+            for i in data_lpu_person:
+                data_date_dict = {}
+                name = i['PersonSurName_SurName']
+                MedStaffFact_id = i['MedStaffFact_id']
+                print(name, MedStaffFact_id)
 
-        for i in data_lpu_person:
-            data_date_dict = {}
-            name = i['PersonSurName_SurName']
-            MedStaffFact_id = i['MedStaffFact_id']
-            print(name, MedStaffFact_id)
+                logging.info(f' MedStaffFact_id в пол1: {MedStaffFact_id}')
+                """поиск даты"""
 
-            logging.info(f' MedStaffFact_id в пол1: {MedStaffFact_id}')
-            """поиск даты"""
+                #поиск дат (14 дней), получаем список свободных дат
+                data_date_dict = search_date.search_date(MedStaffFact_id)
+                print(f' это дата лист из функции: {data_date_dict}')
 
-            data_date_dict = search_date.search_date(MedStaffFact_id)
-            print(f' это дата лист из функции: {data_date_dict}')
+                data_freetime = search_time.search_time(MedStaffFact_id, data_date_dict)
+                print(f' data_time_final = {name} + {data_freetime}')
+                data_busytime, timetable_count = search_busy_date.search_busy_date(MedStaffFact_id)
+                print(f' timetable_count = {timetable_count}')
+                print(f' data_busytime = {data_busytime}')
+                # print(data_time_final.values())
+                timetable_count_free = i['TimetableGraf_Count']
+                print(timetable_count_free)
 
-            data_freetime = search_time.search_time(MedStaffFact_id, data_date_dict)
-            print(f' data_time_final = {name} + {data_freetime}')
-            data_busytime, timetable_count = search_busy_date.search_busy_date(MedStaffFact_id)
-            print(f' timetable_count = {timetable_count}')
-            print(f' data_busytime = {data_busytime}')
-            # print(data_time_final.values())
-            timetable_count_free = i['TimetableGraf_Count']
-            print(timetable_count_free)
+                total_timetable_type1 = int(timetable_count) + int(timetable_count_free)
+                print('total_timetable_type1', total_timetable_type1)
+                if total_timetable_type1 != 0:
+                    percentage_total_timetable_type1 = total_timetable_type1 / (data_freetime + data_busytime) * 100
+                    r_timetable_type1 = round(percentage_total_timetable_type1, 2)
 
-            total_timetable_type1 = int(timetable_count) + int(timetable_count_free)
-            print('total_timetable_type1', total_timetable_type1)
-            if total_timetable_type1 != 0:
-                percentage_total_timetable_type1 = total_timetable_type1 / (data_freetime + data_busytime) * 100
-                r_timetable_type1 = round(percentage_total_timetable_type1, 2)
+                if data_freetime + data_busytime != 0:
+                    total_dict_base[name] = data_freetime + data_busytime, r_timetable_type1
 
-            if data_freetime + data_busytime != 0:
-                total_dict_base[name] = data_freetime + data_busytime, r_timetable_type1
-
-                print('total_dict_base', total_dict_base)
+                    print('total_dict_base', total_dict_base)
+        except:
+            print('какая-то ошибка')
 
         spec_comparisons = '0'
         if spec_ == 'терапевт':
@@ -220,7 +227,7 @@ def serch_pol(callback):
 
             print(result)
 
-            bot.send_message(callback.from_user.id, f' {spec_}:\n'
+            bot.send_message(callback.from_user.id, f' {spec_}, {spec_comparisons}:\n'
                                                     f'\n'
                                                     f'{result}')
 

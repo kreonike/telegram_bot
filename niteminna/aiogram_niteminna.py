@@ -16,13 +16,17 @@ import search_time
 import search_time2
 import time_delete
 import home_delete
-from aiogram import Bot, types
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.dispatcher import Dispatcher
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram import Bot, types, Dispatcher
+import asyncio
+#from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.fsm.storage.memory import MemoryStorage
+#from aiogram.dispatcher import Dispatcher
+#from aiogram.dispatcher import FSMContext
+from aiogram.fsm.context import FSMContext
+#from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from aiogram.utils import executor
+
 from config import bot_token
 from keyboards.client_kb import kb_client, spec_client, pol_client, menu_client, ident_client, choise_client
 
@@ -46,9 +50,9 @@ storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
 
-async def shutdown(dp):
-    await storage.close()
-    await bot.close()
+# async def shutdown(dp):
+#     await storage.close()
+#     await bot.close()
 
 
 class ClientRequests(StatesGroup):
@@ -1064,8 +1068,12 @@ changelog = 'реализована отмена'
 #     await state.finish()  # Выключаем состояние
 
 
-if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True, on_shutdown=shutdown)
+async def main():
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 
 ########################
 

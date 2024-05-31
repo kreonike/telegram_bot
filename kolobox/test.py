@@ -30,7 +30,11 @@ for i in data['docs']:
     k_data.append(rating)
     k_data.append('\n')
     k_data.append('Жанр: ')
-    k_data.append(genres)
+    for i_ in genres:
+        k_data.append(i_['name'] + ' ')
+    #k_data.append(genres)
+    # for genres_ in genres:
+    #     k_data.append(genres_)
     k_data.append('\n')
     k_data.append('\n')
 
